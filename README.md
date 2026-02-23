@@ -9,8 +9,11 @@ This plugin provides skills for building, deploying, and testing smart contracts
 ## Installation
 
 ```bash
-# Install the plugin (when published to a marketplace)
-/plugin install <marketplace>/taiko
+# Add the Taiko marketplace
+/plugin marketplace add taikoxyz/taiko-ai
+
+# Install the plugin
+/plugin install taiko@taikoxyz-taiko-ai
 
 # Or test locally during development
 claude --plugin-dir ./taiko-ai
