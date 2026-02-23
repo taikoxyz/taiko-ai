@@ -13,7 +13,7 @@ This plugin provides skills for building, deploying, and testing smart contracts
 /plugin marketplace add taikoxyz/taiko-ai
 
 # Install the plugin
-/plugin install taiko@taikoxyz-taiko-ai
+/plugin install taiko@taiko
 
 # Or test locally during development
 claude --plugin-dir ./taiko-ai

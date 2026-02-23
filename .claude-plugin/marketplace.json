@@ -1,5 +1,5 @@
 {
-  "name": "taikoxyz-taiko-ai",
+  "name": "taiko",
   "description": "Official Taiko plugins for Claude Code - deploy and interact with smart contracts on Taiko networks",
   "plugins": [
     {
