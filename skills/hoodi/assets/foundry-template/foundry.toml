@@ -6,10 +6,17 @@ solc_version = "0.8.30"
 evm_version = "prague"
 optimizer = true
 optimizer_runs = 200
+via_ir = false
 
 # Use FOUNDRY_PROFILE=layer2 when compiling or deploying to Taiko L2
 [profile.layer2]
 evm_version = "shanghai"
+
+# Required for OpenZeppelin Upgrades plugin
+ffi = true
+ast = true
+build_info = true
+extra_output = ["storageLayout"]
 
 [rpc_endpoints]
 taiko-hoodi = "https://rpc.hoodi.taiko.xyz"

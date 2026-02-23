@@ -43,6 +43,8 @@ Deploy, test, and interact with smart contracts on **Taiko Hoodi** (testnet).
 taiko-ai/
 ├── .claude-plugin/
 │   └── plugin.json            # Plugin manifest
+├── agents/
+│   └── taiko-hoodi-developer.md  # Taiko development subagent
 ├── skills/
 │   ├── hoodi/                 # /taiko:hoodi skill
 │   │   ├── SKILL.md           # Main skill file
@@ -50,10 +52,19 @@ taiko-ai/
 │   │   ├── examples/          # Python and Solidity examples
 │   │   └── assets/            # Foundry template
 │   └── shared/                # Network-agnostic protocol docs
-├── agents/                    # Custom agents (future)
 ├── mcp-servers/               # MCP server implementations (future)
 └── README.md
 ```
+
+## Agents
+
+The `taiko-hoodi-developer` agent provides specialized assistance for Taiko development:
+- Smart contract development with security patterns
+- Testing with Foundry (unit, fork, fuzz tests)
+- Deployment and verification workflows
+- Cross-chain messaging patterns
+
+The agent is automatically activated when working on Taiko-related tasks.
 
 ## Shared Protocol Knowledge
 

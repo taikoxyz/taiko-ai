@@ -6,7 +6,9 @@ A ready-to-use Foundry project for deploying smart contracts on Taiko Hoodi (tes
 
 ```bash
 # Install dependencies
-forge install
+forge install foundry-rs/forge-std
+forge install OpenZeppelin/openzeppelin-contracts@v5.0.0
+forge install OpenZeppelin/openzeppelin-contracts-upgradeable@v5.0.0
 
 # Copy environment file
 cp .env.example .env
@@ -48,8 +50,26 @@ forge build
 ├── test/
 │   └── Counter.t.sol            # Tests including fork tests
 ├── foundry.toml                 # Foundry configuration
+├── remappings.txt               # Import remappings for OpenZeppelin
 └── .env.example                 # Environment template
 ```
+
+## Using OpenZeppelin
+
+This template is pre-configured for OpenZeppelin v5. Import contracts with:
+
+```solidity
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+```
+
+For upgradeable contracts:
+
+```solidity
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+```
+
+**Important:** Never use `forge update` without specifying a version tag, as it defaults to the unstable master branch.
 
 ## Deploying Contracts
 
