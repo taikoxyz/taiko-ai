@@ -5,10 +5,7 @@
   "author": {
     "name": "Taiko"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taikoxyz/taiko-ai"
-  },
+  "repository": "https://github.com/taikoxyz/taiko-ai",
   "license": "MIT",
   "keywords": [
     "taiko",

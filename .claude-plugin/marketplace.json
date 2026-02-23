@@ -14,7 +14,10 @@
       "author": {
         "name": "Taiko"
       },
-      "source": "./",
+      "source": {
+        "source": "github",
+        "repo": "taikoxyz/taiko-ai"
+      },
       "category": "development"
     }
   ]
