@@ -50,7 +50,7 @@ interface IBridge {
 contract CrossChainCounter {
     // Bridge addresses
     // L2 (Taiko Hoodi): 0x1670130000000000000000000000000000000001
-    // L1 (Hoodi): 0x99C73fAc2F015c18CE89b87b98Ee0d8bEBBB9c67
+    // L1 (Hoodi): 0x6a4cf607DaC2C4784B7D934Bcb3AD7F2ED18Ed80
     address public immutable bridge;
 
     // Chain IDs
@@ -166,7 +166,7 @@ contract CrossChainCounter {
 /// @notice Factory for deploying CrossChainCounter with correct bridge addresses
 contract CrossChainCounterFactory {
     // Known bridge addresses
-    address public constant L1_BRIDGE = 0x99C73fAc2F015c18CE89b87b98Ee0d8bEBBB9c67;
+    address public constant L1_BRIDGE = 0x6a4cf607DaC2C4784B7D934Bcb3AD7F2ED18Ed80;
     address public constant L2_BRIDGE = 0x1670130000000000000000000000000000000001;
 
     event CounterDeployed(address indexed counter, address indexed bridge, uint256 chainId);

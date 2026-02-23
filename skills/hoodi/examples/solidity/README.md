@@ -88,7 +88,7 @@ cast send $COUNTER_ADDRESS "syncToRemote(uint32)" 200000 \
 
 | Chain | Chain ID | Bridge Address |
 |-------|----------|----------------|
-| Hoodi (L1) | 560048 | `0x99C73fAc2F015c18CE89b87b98Ee0d8bEBBB9c67` |
+| Hoodi (L1) | 560048 | `0x6a4cf607DaC2C4784B7D934Bcb3AD7F2ED18Ed80` |
 | Taiko Hoodi (L2) | 167013 | `0x1670130000000000000000000000000000000001` |
 
 ## Important Notes
