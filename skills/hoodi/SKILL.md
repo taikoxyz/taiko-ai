@@ -1,10 +1,6 @@
 ---
-name: taiko-hoodi
+name: hoodi
 description: Deploy, test, and interact with smart contracts on Taiko Hoodi testnet using Foundry. Use when "Taiko testnet", "Taiko Hoodi", or "testnet deployment" is mentioned.
-license: MIT
-metadata:
-  author: taiko
-  version: '1.0.0'
 ---
 
 # Taiko Hoodi Development

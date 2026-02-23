@@ -1,14 +1,29 @@
 # Taiko AI
 
-AI-powered tools and skills for developing on Taiko networks.
+A Claude Code plugin for developing on Taiko networks.
 
 ## Overview
 
-This repository contains Claude Code skills and AI tools for building, deploying, and testing smart contracts on Taiko - a Type-1 ZK-EVM based rollup on Ethereum.
+This plugin provides skills for building, deploying, and testing smart contracts on Taiko - a Type-1 ZK-EVM based rollup on Ethereum.
+
+## Installation
+
+```bash
+# Install the plugin (when published to a marketplace)
+/plugin install <marketplace>/taiko
+
+# Or test locally during development
+claude --plugin-dir ./taiko-ai
+```
 
 ## Available Skills
 
-### taiko-hoodi
+| Skill | Command | Description |
+|-------|---------|-------------|
+| Hoodi (testnet) | `/taiko:hoodi` | Deploy and test on Taiko Hoodi testnet |
+| Mainnet | `/taiko:mainnet` | *(Coming soon)* Deploy to Taiko mainnet |
+
+### /taiko:hoodi
 
 Deploy, test, and interact with smart contracts on **Taiko Hoodi** (testnet).
 
@@ -19,47 +34,27 @@ Deploy, test, and interact with smart contracts on **Taiko Hoodi** (testnet).
 - Python and Solidity examples
 - Cross-chain messaging patterns
 
-**Quick Start:**
-```bash
-# Install the skill
-claude plugin add taiko-ai/skills/taiko-hoodi
-
-# Or copy the skill to your Claude Code skills directory
-cp -r skills/taiko-hoodi ~/.claude/skills/
-```
-
-## Agent-Agnostic Design
-
-This repository is designed to work with multiple AI tools:
-
-- **Claude Code**: Uses `skills/CLAUDE.md` as entry point
-- **Other AI Agents**: Uses `AGENTS.md` (symlink to `skills/CLAUDE.md`)
-
-The skills follow a standardized format with YAML frontmatter that can be parsed by any AI tool.
-
-## Repository Structure
+## Plugin Structure
 
 ```
 taiko-ai/
-├── AGENTS.md                  # Symlink → skills/CLAUDE.md
+├── .claude-plugin/
+│   └── plugin.json            # Plugin manifest
 ├── skills/
-│   ├── CLAUDE.md              # Skills entry point
-│   ├── shared/                # Network-agnostic protocol docs
-│   └── taiko-hoodi/           # Testnet skill
-│       ├── SKILL.md           # Main skill file
-│       ├── references/        # Contract addresses, network config
-│       ├── examples/          # Python and Solidity examples
-│       └── assets/            # Foundry template
-├── mcp-servers/               # Future MCP server implementations
-├── agents/                    # Future agent definitions
+│   ├── hoodi/                 # /taiko:hoodi skill
+│   │   ├── SKILL.md           # Main skill file
+│   │   ├── references/        # Contract addresses, network config
+│   │   ├── examples/          # Python and Solidity examples
+│   │   └── assets/            # Foundry template
+│   └── shared/                # Network-agnostic protocol docs
+├── agents/                    # Custom agents (future)
+├── mcp-servers/               # MCP server implementations (future)
 └── README.md
 ```
 
-## Skills Documentation
+## Shared Protocol Knowledge
 
-### Shared Protocol Knowledge
-
-The `skills/shared/` directory contains network-agnostic documentation:
+The `skills/shared/` directory contains network-agnostic documentation used by all network skills:
 
 - **protocol-overview.md** - Taiko architecture, based rollup design
 - **bridge-interface.md** - IBridge, SignalService interfaces
@@ -68,15 +63,6 @@ The `skills/shared/` directory contains network-agnostic documentation:
 - **security-checklist.md** - Smart contract security for Taiko
 - **foundry-guide.md** - Foundry configuration for L2 deployment
 - **cross-chain-patterns.md** - L1↔L2 messaging patterns
-
-### Network-Specific Skills
-
-Each network skill (e.g., `taiko-hoodi/`) contains:
-
-- **SKILL.md** - Main skill with YAML frontmatter and instructions
-- **references/** - Contract addresses and network configuration
-- **examples/** - Working code examples (Python, Solidity)
-- **assets/** - Foundry project template
 
 ## Quick Reference
 
@@ -90,14 +76,17 @@ Each network skill (e.g., `taiko-hoodi/`) contains:
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) for smart contract development
 - Python 3.8+ for Python examples
-- [Claude Code](https://claude.ai/code) for using skills
+- [Claude Code](https://claude.ai/code) v1.0.33+ for using plugins
 
 ### Using the Foundry Template
 
 ```bash
-cd skills/taiko-hoodi/assets/foundry-template
+cd skills/hoodi/assets/foundry-template
 cp .env.example .env
 # Edit .env with your private key
+
+# Install dependencies
+forge install
 
 # Build with Shanghai EVM
 FOUNDRY_PROFILE=layer2 forge build
@@ -108,12 +97,23 @@ FOUNDRY_PROFILE=layer2 forge create src/Counter.sol:Counter \
   --private-key $PRIVATE_KEY
 ```
 
+### Testing the Plugin Locally
+
+```bash
+# Run Claude Code with the plugin loaded
+claude --plugin-dir ./taiko-ai
+
+# Then use the skills
+/taiko:hoodi
+```
+
 ## Resources
 
 - [Taiko Documentation](https://docs.taiko.xyz)
 - [Taiko GitHub](https://github.com/taikoxyz/taiko-mono)
 - [Bridge UI](https://bridge.hoodi.taiko.xyz)
 - [Block Explorer](https://hoodi.taikoscan.io)
+- [Claude Code Plugins](https://code.claude.com/docs/en/plugins)
 
 ## Contributing
 
