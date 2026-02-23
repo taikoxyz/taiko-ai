@@ -28,10 +28,20 @@ claude plugin add taiko-ai/skills/taiko-hoodi
 cp -r skills/taiko-hoodi ~/.claude/skills/
 ```
 
+## Agent-Agnostic Design
+
+This repository is designed to work with multiple AI tools:
+
+- **Claude Code**: Uses `skills/CLAUDE.md` as entry point
+- **Other AI Agents**: Uses `AGENTS.md` (symlink to `skills/CLAUDE.md`)
+
+The skills follow a standardized format with YAML frontmatter that can be parsed by any AI tool.
+
 ## Repository Structure
 
 ```
 taiko-ai/
+├── AGENTS.md                  # Symlink → skills/CLAUDE.md
 ├── skills/
 │   ├── CLAUDE.md              # Skills entry point
 │   ├── shared/                # Network-agnostic protocol docs
