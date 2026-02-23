@@ -14,7 +14,7 @@
       "author": {
         "name": "Taiko"
       },
-      "source": ".",
+      "source": "./",
       "category": "development"
     }
   ]
