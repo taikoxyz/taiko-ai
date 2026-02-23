@@ -1,187 +1,85 @@
 # Bridge Interface
 
-The Taiko Bridge provides cross-chain message passing with status tracking, retries, and fund recovery.
+Cross-chain message passing with status tracking, retries, and fund recovery.
 
-## IBridge Interface
+## IBridge
 
 ```solidity
 interface IBridge {
-    // ============ Enums ============
-
     enum Status { NEW, RETRIABLE, DONE, FAILED, RECALLED }
-    enum StatusReason {
-        INVOCATION_OK,
-        INVOCATION_PROHIBITED,
-        INVOCATION_FAILED,
-        OUT_OF_ETH_QUOTA
-    }
-
-    // ============ Structs ============
 
     struct Message {
-        uint64 id;            // Auto-assigned message ID
+        uint64 id;            // Auto-assigned
         uint64 fee;           // Relayer fee
-        uint32 gasLimit;      // Gas for message execution
-        address from;         // Sender (auto-assigned)
-        uint64 srcChainId;    // Source chain (auto-assigned)
+        uint32 gasLimit;      // Gas for execution
+        address from;         // Auto-assigned
+        uint64 srcChainId;    // Auto-assigned
         address srcOwner;     // Owner on source chain
         uint64 destChainId;   // Destination chain
-        address destOwner;    // Owner on destination chain
+        address destOwner;    // Owner on destination
         address to;           // Target contract
         uint256 value;        // ETH to send
         bytes data;           // Calldata
     }
 
-    struct Context {
-        bytes32 msgHash;
-        address from;
-        uint64 srcChainId;
-    }
+    struct Context { bytes32 msgHash; address from; uint64 srcChainId; }
 
-    // ============ Events ============
-
-    event MessageSent(bytes32 indexed msgHash, Message message);
-    event MessageStatusChanged(bytes32 indexed msgHash, Status status);
-
-    // ============ Functions ============
-
-    /// @notice Send a cross-chain message
-    function sendMessage(Message calldata _message)
-        external payable
-        returns (bytes32 msgHash_, Message memory message_);
-
-    /// @notice Process a received message (called on destination chain)
-    function processMessage(Message calldata _message, bytes calldata _proof)
-        external
-        returns (Status, StatusReason);
-
-    /// @notice Retry a failed message
-    function retryMessage(Message calldata _message, bool _isLastAttempt) external;
-
-    /// @notice Mark message as failed (enables recall on source)
-    function failMessage(Message calldata _message) external;
-
-    /// @notice Recall funds from a failed message (called on source chain)
-    function recallMessage(Message calldata _message, bytes calldata _proof) external;
-
-    /// @notice Get current message context (for receiving contracts)
-    function context() external view returns (Context memory ctx_);
-
-    /// @notice Check if a message was sent
-    function isMessageSent(Message calldata _message) external view returns (bool);
-
-    /// @notice Get next message ID
-    function nextMessageId() external view returns (uint64);
-
-    /// @notice Hash a message
-    function hashMessage(Message memory _message) external pure returns (bytes32);
+    function sendMessage(Message calldata) external payable returns (bytes32 msgHash, Message memory);
+    function processMessage(Message calldata, bytes calldata proof) external returns (Status, StatusReason);
+    function retryMessage(Message calldata, bool isLastAttempt) external;
+    function recallMessage(Message calldata, bytes calldata proof) external;
+    function context() external view returns (Context memory);
 }
 ```
 
-## Message Status Flow
+## Status Flow
 
 ```
-NEW ──────────────────────────────────────────────────────→ DONE
- │                                                            ↑
- │ (execution fails)                                          │
- ↓                                                            │
-RETRIABLE ──────────── retryMessage() ────────────────────────┘
- │
- │ (isLastAttempt = true, still fails)
- ↓
-FAILED ──────────────── recallMessage() on source ──────→ RECALLED
+NEW → DONE (success)
+NEW → RETRIABLE → DONE (retry succeeds)
+NEW → RETRIABLE → FAILED → RECALLED (final failure, funds returned)
 ```
 
-## Sending Messages
+## Send Message
 
 ```solidity
-// 1. Construct message
-IBridge.Message memory message = IBridge.Message({
-    id: 0,                    // Auto-assigned
-    fee: relayerFee,          // Fee for relayer
-    gasLimit: 200000,         // Gas for execution
-    from: address(0),         // Auto-assigned
-    srcChainId: 0,            // Auto-assigned
-    srcOwner: msg.sender,     // Owner on source chain
-    destChainId: destChainId, // Target chain
-    destOwner: recipient,     // Owner on destination
-    to: targetContract,       // Contract to call
-    value: ethAmount,         // ETH to send
-    data: callData            // Function calldata
+IBridge.Message memory msg = IBridge.Message({
+    id: 0, fee: relayerFee, gasLimit: 200000,
+    from: address(0), srcChainId: 0,  // auto-assigned
+    srcOwner: msg.sender, destOwner: recipient,
+    destChainId: destChainId, to: target,
+    value: ethAmount, data: callData
 });
-
-// 2. Send message (pay fee + value)
-(bytes32 msgHash, ) = bridge.sendMessage{value: ethAmount + relayerFee}(message);
+bridge.sendMessage{value: ethAmount + relayerFee}(msg);
 ```
 
-## Receiving Messages
-
-Contracts receiving bridge messages should:
-
-1. Verify the caller is the Bridge
-2. Check message context for source chain validation
+## Receive Message
 
 ```solidity
-contract BridgeReceiver {
-    IBridge public bridge;
-
-    function onMessageReceived(bytes calldata _data) external {
-        // Verify caller is bridge
-        require(msg.sender == address(bridge), "Not bridge");
-
-        // Get message context
-        IBridge.Context memory ctx = bridge.context();
-
-        // Verify source chain
-        require(ctx.srcChainId == expectedSourceChain, "Wrong source");
-
-        // Process message data
-        // ...
-    }
+function onMessageReceived(bytes calldata _data) external {
+    require(msg.sender == address(bridge), "Not bridge");
+    IBridge.Context memory ctx = bridge.context();
+    require(ctx.srcChainId == expectedChain, "Wrong source");
+    // Process _data
 }
 ```
 
-## Recalling Failed Messages
-
-If a message fails on the destination chain, funds can be recovered:
+## Recall Failed
 
 ```solidity
-// On source chain, after message marked FAILED on destination
+// On source chain after message marked FAILED
 bridge.recallMessage(originalMessage, merkleProof);
 // Funds returned to srcOwner
 ```
 
-## SignalService (Low-Level)
-
-For lower-level signal sending without the Bridge abstraction:
+## ISignalService (Low-Level)
 
 ```solidity
 interface ISignalService {
-    /// @notice Send a signal
-    function sendSignal(bytes32 _signal) external returns (bytes32 slot_);
-
-    /// @notice Verify a signal was sent on another chain
-    function verifySignalReceived(
-        uint64 _chainId,
-        address _app,
-        bytes32 _signal,
-        bytes calldata _proof
-    ) external view;
-
-    /// @notice Get the storage slot for a signal
-    function getSignalSlot(uint64 _chainId, address _app, bytes32 _signal)
-        external pure returns (bytes32);
+    function sendSignal(bytes32 signal) external returns (bytes32 slot);
+    function verifySignalReceived(uint64 chainId, address app, bytes32 signal, bytes calldata proof) external view;
+    function getSignalSlot(uint64 chainId, address app, bytes32 signal) external pure returns (bytes32);
 }
-```
 
-## Signal Slot Computation
-
-Signals are stored at deterministic slots:
-
-```solidity
-function getSignalSlot(uint64 _chainId, address _app, bytes32 _signal)
-    public pure returns (bytes32)
-{
-    return keccak256(abi.encodePacked("SIGNAL", _chainId, _app, _signal));
-}
+// Slot = keccak256(abi.encodePacked("SIGNAL", chainId, app, signal))
 ```
