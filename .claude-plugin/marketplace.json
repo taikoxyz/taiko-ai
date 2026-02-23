@@ -2,6 +2,9 @@
   "name": "taiko",
   "version": "1.0.0",
   "description": "Official Taiko plugins for Claude Code - deploy and interact with smart contracts on Taiko networks",
+  "metadata": {
+    "description": "Official Taiko plugins for Claude Code - deploy and interact with smart contracts on Taiko networks"
+  },
   "owner": {
     "name": "Taiko",
     "email": "info@taiko.xyz"
