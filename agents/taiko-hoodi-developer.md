@@ -69,19 +69,49 @@ FOUNDRY_PROFILE=layer2 forge script script/Deploy.s.sol:DeployScript \
   --broadcast
 ```
 
-### 4. Verify
+### 4. Verify on Taikoscan
+
+**Option A: Deploy with automatic verification (recommended)**
 ```bash
-# Taikoscan
+FOUNDRY_PROFILE=layer2 forge script script/Deploy.s.sol:DeployScript \
+  --rpc-url https://rpc.hoodi.taiko.xyz \
+  --private-key $PRIVATE_KEY \
+  --broadcast \
+  --verify \
+  --verifier-url https://api-hoodi.taikoscan.io/api \
+  --etherscan-api-key $TAIKOSCAN_API_KEY
+```
+
+**Option B: Verify after deployment**
+```bash
+# Verify on hoodi.taikoscan.io
 forge verify-contract $ADDRESS src/MyContract.sol:MyContract \
+  --watch \
   --verifier-url https://api-hoodi.taikoscan.io/api \
   --etherscan-api-key $TAIKOSCAN_API_KEY
 
-# Blockscout
+# With constructor arguments (if applicable)
+forge verify-contract $ADDRESS src/MyContract.sol:MyContract \
+  --watch \
+  --verifier-url https://api-hoodi.taikoscan.io/api \
+  --etherscan-api-key $TAIKOSCAN_API_KEY \
+  --constructor-args $(cast abi-encode "constructor(address,uint256)" $ARG1 $ARG2)
+```
+
+**Option C: Verify on Blockscout (alternative)**
+```bash
 forge verify-contract $ADDRESS src/MyContract.sol:MyContract \
   --chain-id 167013 \
   --verifier blockscout \
   --verifier-url https://blockscout.hoodi.taiko.xyz/api
 ```
+
+### Verification Tips
+
+- **Always use `--watch`** to wait for verification completion
+- **Get API key** from [Taikoscan](https://hoodi.taikoscan.io) - register and generate key in account settings
+- **Set environment variable**: `export TAIKOSCAN_API_KEY=your_key_here`
+- **For proxies**: Verify both implementation and proxy contracts separately
 
 ## Security Checklist
 
@@ -200,7 +230,9 @@ contract MyUpgradeable is UUPSUpgradeable, OwnableUpgradeable {
 |-------|----------|
 | "Invalid EVM version" | Use `FOUNDRY_PROFILE=layer2` |
 | "PUSH0 not supported" | Contract compiled with Prague, use Shanghai |
-| "Contract not verified" | Check API endpoint URL and key format |
+| "Contract not verified" | Use `--watch` flag and verify API key is valid |
+| "Unable to verify" | Check constructor args match, use `--constructor-args` |
+| "Already verified" | Contract was previously verified, check explorer |
 | "Insufficient funds" | Bridge ETH from L1 Hoodi to L2 |
 | "Transaction reverted" | Use `cast run <TX_HASH>` to debug |
 | Storage layout changed | Use OpenZeppelin Upgrades plugin |
