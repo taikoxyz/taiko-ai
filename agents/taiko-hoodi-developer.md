@@ -69,7 +69,9 @@ FOUNDRY_PROFILE=layer2 forge script script/Deploy.s.sol:DeployScript \
   --broadcast
 ```
 
-### 4. Verify on Taikoscan
+### 4. Verify on Taikoscan (Etherscan V2 API)
+
+**Important**: Use Etherscan V2 API with chain ID in the URL for reliable verification.
 
 **Option A: Deploy with automatic verification (recommended)**
 ```bash
@@ -78,24 +80,27 @@ FOUNDRY_PROFILE=layer2 forge script script/Deploy.s.sol:DeployScript \
   --private-key $PRIVATE_KEY \
   --broadcast \
   --verify \
-  --verifier-url https://api-hoodi.taikoscan.io/api \
-  --etherscan-api-key $TAIKOSCAN_API_KEY
+  --verifier etherscan \
+  --verifier-url "https://api.etherscan.io/v2/api?chainid=167013" \
+  --etherscan-api-key $ETHERSCAN_API_KEY
 ```
 
 **Option B: Verify after deployment**
 ```bash
-# Verify on hoodi.taikoscan.io
+# Basic verification
 forge verify-contract $ADDRESS src/MyContract.sol:MyContract \
-  --watch \
-  --verifier-url https://api-hoodi.taikoscan.io/api \
-  --etherscan-api-key $TAIKOSCAN_API_KEY
+  --verifier etherscan \
+  --verifier-url "https://api.etherscan.io/v2/api?chainid=167013" \
+  --etherscan-api-key $ETHERSCAN_API_KEY \
+  --watch
 
-# With constructor arguments (if applicable)
+# With constructor arguments
 forge verify-contract $ADDRESS src/MyContract.sol:MyContract \
-  --watch \
-  --verifier-url https://api-hoodi.taikoscan.io/api \
-  --etherscan-api-key $TAIKOSCAN_API_KEY \
-  --constructor-args $(cast abi-encode "constructor(address,uint256)" $ARG1 $ARG2)
+  --verifier etherscan \
+  --verifier-url "https://api.etherscan.io/v2/api?chainid=167013" \
+  --etherscan-api-key $ETHERSCAN_API_KEY \
+  --constructor-args $(cast abi-encode "constructor(address,uint256)" $ARG1 $ARG2) \
+  --watch
 ```
 
 **Option C: Verify on Blockscout (alternative)**
@@ -108,9 +113,10 @@ forge verify-contract $ADDRESS src/MyContract.sol:MyContract \
 
 ### Verification Tips
 
+- **Use Etherscan V2 API** - The URL format `https://api.etherscan.io/v2/api?chainid=167013` works reliably
 - **Always use `--watch`** to wait for verification completion
-- **Get API key** from [Taikoscan](https://hoodi.taikoscan.io) - register and generate key in account settings
-- **Set environment variable**: `export TAIKOSCAN_API_KEY=your_key_here`
+- **Get API key** from [Etherscan](https://etherscan.io) - same key works for all chains via V2 API
+- **Set environment variable**: `export ETHERSCAN_API_KEY=your_key_here`
 - **For proxies**: Verify both implementation and proxy contracts separately
 
 ## Security Checklist
