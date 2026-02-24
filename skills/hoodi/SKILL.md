@@ -17,6 +17,7 @@ Build, deploy, and verify smart contracts on Taiko Hoodi (testnet).
 | Block Explorer | `https://hoodi.taikoscan.io` |
 | EVM Version | Shanghai (Type-1 ZK-EVM) |
 | Solidity | `^0.8.24` (protocol uses `0.8.30`) |
+| x402 Facilitator | `https://facilitator.taiko.xyz` |
 
 ## Quick Decision Guide
 
@@ -174,6 +175,20 @@ See `examples/` directory for:
 
 - **Code Diff**: https://codediff.taiko.xyz - Compare contract implementations
 - **Status Page**: https://status.taiko.xyz - Network status
+
+## x402 Payments
+
+Taiko runs an [x402](https://www.x402.org) facilitator for HTTP-native payments on Hoodi.
+
+| Property | Value |
+|----------|-------|
+| Facilitator URL | `https://facilitator.taiko.xyz` |
+| Network | `eip155:167013` |
+| Scheme | `exact` |
+| x402 Version | `2` |
+| Signer | `0x81062a8b93fc840225bf879829145e3840057CD4` |
+
+Endpoints: `POST /verify`, `POST /settle`, `GET /supported`
 
 ## Troubleshooting
 
