@@ -1,6 +1,6 @@
 # Taiko AI
 
-A [Claude Code](https://claude.ai/code) plugin for developing on Taiko networks.
+An AI agent plugin for developing on Taiko networks.
 
 ## Installation
 
