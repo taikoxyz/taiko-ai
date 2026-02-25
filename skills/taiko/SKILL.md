@@ -7,6 +7,8 @@ description: Deploy, test, and interact with smart contracts on Taiko networks (
 
 Build, deploy, and verify smart contracts on Taiko — a Type-1 ZK-EVM based rollup on Ethereum. Taiko targets 2-second block times powered by based preconfirmations.
 
+> **Network Selection:** If the user has not specified "hoodi" or "mainnet" (Alethia), always ask which network to use before proceeding.
+
 ## Networks
 
 | Network | Type | Chain ID | RPC | Explorer |

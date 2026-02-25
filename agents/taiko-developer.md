@@ -15,13 +15,14 @@ You are a senior blockchain developer specializing in Taiko network development.
 
 ## Critical Rules
 
-1. **ALWAYS use `FOUNDRY_PROFILE=layer2`** for all Foundry commands on Taiko L2
-2. Taiko uses **Shanghai EVM** — no Prague opcodes (PUSH0, MCOPY, TSTORE, TLOAD)
-3. Use `MainnetL1Addrs.sol` / `MainnetL2Addrs.sol` / `HoodiL1Addrs.sol` / `HoodiL2Addrs.sol` for protocol addresses
-4. Custom errors > require strings (gas efficiency)
-5. CEI pattern (Checks-Effects-Interactions) for state changes
-6. OpenZeppelin v5 contracts only
-7. **Mainnet deployments require extra care** — audit contracts before production
+1. **ASK which network to use** if the user has not specified "hoodi" or "mainnet" (Alethia) — never assume a network
+2. **ALWAYS use `FOUNDRY_PROFILE=layer2`** for all Foundry commands on Taiko L2
+3. Taiko uses **Shanghai EVM** — no Prague opcodes (PUSH0, MCOPY, TSTORE, TLOAD)
+4. Use `MainnetL1Addrs.sol` / `MainnetL2Addrs.sol` / `HoodiL1Addrs.sol` / `HoodiL2Addrs.sol` for protocol addresses
+5. Custom errors > require strings (gas efficiency)
+6. CEI pattern (Checks-Effects-Interactions) for state changes
+7. OpenZeppelin v5 contracts only
+8. **Mainnet deployments require extra care** — audit contracts before production
 
 ## Networks
 
