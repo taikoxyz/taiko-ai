@@ -24,7 +24,7 @@ claude --plugin-dir ./taiko-ai
 | Skill | Command | Description |
 |-------|---------|-------------|
 | Hoodi (testnet) | `/taiko:hoodi` | Deploy and test on Taiko Hoodi testnet |
-| Mainnet | `/taiko:mainnet` | *(Coming soon)* Deploy to Taiko mainnet |
+| Mainnet | `/taiko:mainnet` | Deploy to Taiko Alethia mainnet |
 
 ### /taiko:hoodi
 
@@ -37,34 +37,51 @@ Deploy, test, and interact with smart contracts on **Taiko Hoodi** (testnet).
 - Python and Solidity examples
 - Cross-chain messaging patterns
 
+### /taiko:mainnet
+
+Deploy, test, and interact with smart contracts on **Taiko Alethia** (mainnet).
+
+**Features:**
+- Complete Foundry setup with Shanghai EVM configuration
+- Contract deployment and verification guides (Taikoscan, Blockscout, Etherscan V2)
+- Protocol contract addresses for L1 (Ethereum) and L2 (Taiko)
+- Python and Solidity examples
+- Cross-chain messaging patterns
+- x402 payment facilitator integration
+
 ## Plugin Structure
 
 ```
 taiko-ai/
 ├── .claude-plugin/
-│   └── plugin.json            # Plugin manifest
+│   └── plugin.json               # Plugin manifest
 ├── agents/
-│   └── taiko-hoodi-developer.md  # Taiko development subagent
+│   ├── taiko-hoodi-developer.md  # Hoodi testnet subagent
+│   └── taiko-mainnet-developer.md # Mainnet subagent
 ├── skills/
-│   ├── hoodi/                 # /taiko:hoodi skill
-│   │   ├── SKILL.md           # Main skill file
-│   │   ├── references/        # Contract addresses, network config
-│   │   ├── examples/          # Python and Solidity examples
-│   │   └── assets/            # Foundry template
-│   └── shared/                # Network-agnostic protocol docs
-├── mcp-servers/               # MCP server implementations (future)
+│   ├── hoodi/                    # /taiko:hoodi skill
+│   │   ├── SKILL.md              # Main skill file
+│   │   ├── references/           # Contract addresses, network config
+│   │   ├── examples/             # Python and Solidity examples
+│   │   └── assets/               # Foundry template
+│   ├── mainnet/                  # /taiko:mainnet skill
+│   │   ├── SKILL.md              # Main skill file
+│   │   ├── references/           # Contract addresses, network config
+│   │   ├── examples/             # Python and Solidity examples
+│   │   └── assets/               # Foundry template
+│   └── shared/                   # Network-agnostic protocol docs
+├── mcp-servers/                  # MCP server implementations (future)
 └── README.md
 ```
 
 ## Agents
 
-The `taiko-hoodi-developer` agent provides specialized assistance for Taiko development:
-- Smart contract development with security patterns
-- Testing with Foundry (unit, fork, fuzz tests)
-- Deployment and verification workflows
-- Cross-chain messaging patterns
+Two specialized agents provide context-aware assistance:
 
-The agent is automatically activated when working on Taiko-related tasks.
+- **taiko-hoodi-developer** - Testnet development, testing, and experimentation
+- **taiko-mainnet-developer** - Production deployment with extra safety checks
+
+Both agents are automatically activated when working on Taiko-related tasks.
 
 ## Shared Protocol Knowledge
 
@@ -82,6 +99,7 @@ The `skills/shared/` directory contains network-agnostic documentation used by a
 
 | Network | Chain ID | RPC | Explorer |
 |---------|----------|-----|----------|
+| Taiko Alethia | 167000 | https://rpc.mainnet.taiko.xyz | https://taikoscan.io |
 | Taiko Hoodi | 167013 | https://rpc.hoodi.taiko.xyz | https://hoodi.taikoscan.io |
 
 ## Development
@@ -95,7 +113,13 @@ The `skills/shared/` directory contains network-agnostic documentation used by a
 ### Using the Foundry Template
 
 ```bash
+# For testnet
 cd skills/hoodi/assets/foundry-template
+
+# For mainnet
+cd skills/mainnet/assets/foundry-template
+
+# Then:
 cp .env.example .env
 # Edit .env with your private key
 
@@ -105,7 +129,7 @@ forge install
 # Build with Shanghai EVM
 FOUNDRY_PROFILE=layer2 forge build
 
-# Deploy
+# Deploy (testnet example)
 FOUNDRY_PROFILE=layer2 forge create src/Counter.sol:Counter \
   --rpc-url https://rpc.hoodi.taiko.xyz \
   --private-key $PRIVATE_KEY
@@ -119,14 +143,17 @@ claude --plugin-dir ./taiko-ai
 
 # Then use the skills
 /taiko:hoodi
+/taiko:mainnet
 ```
 
 ## Resources
 
 - [Taiko Documentation](https://docs.taiko.xyz)
 - [Taiko GitHub](https://github.com/taikoxyz/taiko-mono)
-- [Bridge UI](https://bridge.hoodi.taiko.xyz)
-- [Block Explorer](https://hoodi.taikoscan.io)
+- [Bridge UI (Mainnet)](https://bridge.taiko.xyz)
+- [Bridge UI (Testnet)](https://bridge.hoodi.taiko.xyz)
+- [Block Explorer (Mainnet)](https://taikoscan.io)
+- [Block Explorer (Testnet)](https://hoodi.taikoscan.io)
 - [Claude Code Plugins](https://code.claude.com/docs/en/plugins)
 
 ## Contributing

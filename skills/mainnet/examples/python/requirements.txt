@@ -1,0 +1,8 @@
+# Core dependencies
+# Note: pysha3 is optional - scripts fall back to `cast keccak` if unavailable
+
+# Optional: For native keccak256 support
+pysha3>=1.0.0
+
+# Optional: For more advanced web3 interactions
+# web3>=6.0.0
