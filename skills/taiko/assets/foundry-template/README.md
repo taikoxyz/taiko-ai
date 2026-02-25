@@ -34,8 +34,10 @@ Taiko uses **Shanghai EVM**. Always use `FOUNDRY_PROFILE=layer2`.
 ```
 ├── src/
 │   ├── HelloTaiko.sol         # Example Taiko-aware contract
-│   ├── HoodiAddresses.sol     # Hoodi testnet protocol addresses
-│   └── MainnetAddresses.sol   # Mainnet protocol addresses
+│   ├── MainnetL1Addrs.sol     # Mainnet L1 protocol addresses
+│   ├── MainnetL2Addrs.sol     # Mainnet L2 protocol addresses
+│   ├── HoodiL1Addrs.sol       # Hoodi L1 protocol addresses
+│   └── HoodiL2Addrs.sol       # Hoodi L2 protocol addresses
 ├── script/
 │   └── Deploy.s.sol           # Deployment scripts
 ├── test/
@@ -47,13 +49,13 @@ Taiko uses **Shanghai EVM**. Always use `FOUNDRY_PROFILE=layer2`.
 ## Using Protocol Addresses
 
 ```solidity
-import {HoodiAddresses} from "./HoodiAddresses.sol";
-import {MainnetAddresses} from "./MainnetAddresses.sol";
+import {HoodiL2Addrs} from "./HoodiL2Addrs.sol";
+import {MainnetL2Addrs} from "./MainnetL2Addrs.sol";
 
 contract MyContract {
     function getBridge() external view returns (address) {
-        if (block.chainid == 167000) return MainnetAddresses.L2_BRIDGE;
-        return HoodiAddresses.L2_BRIDGE;
+        if (block.chainid == 167000) return MainnetL2Addrs.BRIDGE;
+        return HoodiL2Addrs.BRIDGE;
     }
 }
 ```
