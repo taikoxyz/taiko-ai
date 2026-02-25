@@ -52,21 +52,13 @@ forge verify-contract $ADDRESS src/Contract.sol:Contract \
   --etherscan-api-key $ETHERSCAN_API_KEY --watch
 ```
 
-## Key Protocol Addresses
+## Protocol Addresses
 
-```solidity
-// L2 predefined addresses (same pattern, different prefix)
-// Mainnet: 0x167000...  Hoodi: 0x167013...
-BRIDGE         = 0x...0000000000000000000000000001
-SIGNAL_SERVICE = 0x...0000000000000000000000000005
-TAIKO_ANCHOR   = 0x...0000000000000000000000010001
+For contract addresses, read the Solidity libraries:
+- `assets/foundry-template/src/MainnetAddresses.sol`
+- `assets/foundry-template/src/HoodiAddresses.sol`
 
-// L1 Bridge
-Mainnet: 0xd60247c6848B7Ca29eDdF63AA924E53dB6Ddd8EC
-Hoodi:   0x6a4cf607DaC2C4784B7D934Bcb3AD7F2ED18Ed80
-```
-
-For full addresses, read `assets/foundry-template/src/MainnetAddresses.sol` or `HoodiAddresses.sol`.
+L2 predefined addresses follow the pattern `0x{chainId}...0001` (Bridge), `...0005` (SignalService), `...10001` (TaikoAnchor).
 
 ## Security Checklist
 
