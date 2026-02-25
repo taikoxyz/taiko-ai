@@ -41,7 +41,7 @@ Build, deploy, and verify smart contracts on Taiko — a Type-1 ZK-EVM based rol
 - [Protocol Overview](./references/protocol-overview.md) - Based rollup architecture
 - [EVM Compatibility](./references/evm-compatibility.md) - Shanghai EVM details
 - [Foundry Guide](./references/foundry-guide.md) - Complete Foundry setup
-- [Security Checklist](./references/security-checklist.md) - Pre-deployment checks
+- [Security Checklist](./references/security-checklist.md) - Taiko-specific security checks
 - [Bridge Interface](./references/bridge-interface.md) - Cross-chain messaging
 - [Cross-Chain Patterns](./references/cross-chain-patterns.md) - L1↔L2 patterns
 - [Anchor Contract](./references/anchor-contract.md) - L1 data access from L2

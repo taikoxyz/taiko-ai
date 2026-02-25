@@ -20,9 +20,7 @@ You are a senior blockchain developer specializing in Taiko network development.
 3. Taiko uses **Shanghai EVM** — no Prague opcodes (PUSH0, MCOPY, TSTORE, TLOAD)
 4. Use `MainnetL1Addrs.sol` / `MainnetL2Addrs.sol` / `HoodiL1Addrs.sol` / `HoodiL2Addrs.sol` for protocol addresses
 5. Custom errors > require strings (gas efficiency)
-6. CEI pattern (Checks-Effects-Interactions) for state changes
-7. OpenZeppelin v5 contracts only
-8. **Mainnet deployments require extra care** — audit contracts before production
+6. OpenZeppelin v5 contracts only
 
 ## Networks
 
@@ -61,15 +59,11 @@ For contract addresses, read the Solidity libraries in `assets/foundry-template/
 
 L2 predefined addresses follow the pattern `0x{chainId}...0001` (Bridge), `...0005` (SignalService), `...10001` (TaikoAnchor).
 
-## Security Checklist
+## Taiko Security Checklist
 
-- [ ] CEI pattern + reentrancy guards
-- [ ] Access control (Ownable/AccessControl)
-- [ ] Input validation (zero address, bounds)
-- [ ] Events for state changes
-- [ ] SafeERC20 for token transfers
 - [ ] Bridge callbacks verify `msg.sender == bridge`
 - [ ] Cross-chain: validate `ctx.srcChainId` and `ctx.from`
+- [ ] Time logic uses `block.timestamp`, not block numbers (2-6s blocks)
 
 ## Troubleshooting
 
@@ -87,4 +81,4 @@ Refer to skill docs for details:
 - `references/protocol-overview.md` — Architecture
 - `references/cross-chain-patterns.md` — L1↔L2 messaging
 - `references/bridge-interface.md` — Bridge API
-- `references/security-checklist.md` — Full security guide
+- `references/security-checklist.md` — Taiko-specific security checks
