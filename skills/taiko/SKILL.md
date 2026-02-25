@@ -5,7 +5,7 @@ description: Deploy, test, and interact with smart contracts on Taiko networks (
 
 # Taiko Development
 
-Build, deploy, and verify smart contracts on Taiko — a Type-1 ZK-EVM based rollup on Ethereum.
+Build, deploy, and verify smart contracts on Taiko — a Type-1 ZK-EVM based rollup on Ethereum. Taiko targets 2-second block times powered by based preconfirmations.
 
 ## Networks
 
