@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 """
-Utility to compare Taiko Hoodi RPC block.hash vs keccak256(RLP(header)).
-Shanghai-only header encoding for Hoodi/Shasta.
+Compare Taiko RPC block.hash vs keccak256(RLP(header)).
+Shanghai-only header encoding.
+
+Usage:
+    export TAIKO_RPC=https://rpc.hoodi.taiko.xyz   # or https://rpc.mainnet.taiko.xyz
+    python calc_blockhash.py
 
 Optional dependency: pip install pysha3
-Fallback hashing path: `cast keccak` if `pysha3` is unavailable.
+Fallback: `cast keccak` if pysha3 unavailable.
 """
 
 import json
+import os
 import subprocess
 from typing import Union
 import urllib.request
 
-RPC = "https://rpc.hoodi.taiko.xyz"
-BLOCK_HEX = "0x46d830"  # 4642864
+RPC = os.environ.get("TAIKO_RPC", "https://rpc.hoodi.taiko.xyz")
+BLOCK_HEX = os.environ.get("BLOCK_HEX", "latest")
 
 try:
     from sha3 import keccak_256  # type: ignore
@@ -22,14 +27,12 @@ except ImportError:
 
 
 def qty_to_int(value: str) -> int:
-    """Parse an RPC quantity (0x-prefixed) into an integer."""
     if not isinstance(value, str) or not value.startswith("0x"):
         raise TypeError(f"Expected quantity hex string, got: {value!r}")
     return int(value, 16)
 
 
 def hex_bytes(value: str) -> bytes:
-    """Parse hex data (0x-prefixed) into bytes."""
     if not isinstance(value, str) or not value.startswith("0x"):
         raise TypeError(f"Expected data hex string, got: {value!r}")
     body = value[2:]
@@ -39,7 +42,6 @@ def hex_bytes(value: str) -> bytes:
 
 
 def int_to_min_bytes(value: int) -> bytes:
-    """Convert integer to minimal big-endian bytes; zero maps to empty bytes."""
     if value < 0:
         raise ValueError("RLP integer cannot be negative")
     if value == 0:
@@ -52,7 +54,6 @@ def int_to_min_bytes(value: int) -> bytes:
 
 
 def enc_len(length: int, offset: int) -> bytes:
-    """Encode RLP length prefix for string/list payloads."""
     if length < 56:
         return bytes([length + offset])
     len_bytes = int_to_min_bytes(length)
@@ -60,32 +61,26 @@ def enc_len(length: int, offset: int) -> bytes:
 
 
 def rlp(item: Union[int, bytes, list]) -> bytes:
-    """RLP-encode integers, bytes, or lists of encodable items."""
     if isinstance(item, list):
         payload = b"".join(rlp(x) for x in item)
         return enc_len(len(payload), 0xC0) + payload
-
     if isinstance(item, int):
         payload = int_to_min_bytes(item)
     elif isinstance(item, bytes):
         payload = item
     else:
         raise TypeError(f"Unsupported RLP item type: {type(item)}")
-
     if len(payload) == 1 and payload[0] < 0x80:
         return payload
     return enc_len(len(payload), 0x80) + payload
 
 
 def keccak256_hex(payload: bytes) -> str:
-    """Compute Keccak-256 and return 0x-prefixed hex."""
     if keccak_256 is not None:
         return "0x" + keccak_256(payload).hexdigest()
-
     try:
         out = subprocess.check_output(
-            ["cast", "keccak", "0x" + payload.hex()],
-            text=True,
+            ["cast", "keccak", "0x" + payload.hex()], text=True,
         ).strip()
     except FileNotFoundError as exc:
         raise SystemExit(
@@ -94,12 +89,10 @@ def keccak256_hex(payload: bytes) -> str:
         ) from exc
     except subprocess.CalledProcessError as exc:
         raise SystemExit(f"Failed to compute keccak via cast: {exc}") from exc
-
     return out if out.startswith("0x") else "0x" + out
 
 
 def require_field(block: dict, key: str) -> str:
-    """Fetch a required header key and fail fast if absent."""
     value = block.get(key)
     if value is None:
         raise SystemExit(f"Missing required Shanghai header field: {key}")
@@ -107,7 +100,6 @@ def require_field(block: dict, key: str) -> str:
 
 
 def shanghai_header_fields(block: dict) -> list:
-    """Return Shanghai header fields in canonical hash order."""
     return [
         hex_bytes(require_field(block, "parentHash")),
         hex_bytes(require_field(block, "sha3Uncles")),
@@ -130,17 +122,14 @@ def shanghai_header_fields(block: dict) -> list:
 
 
 def main() -> None:
-    """Load a Hoodi header and compare RPC hash to local header-hash computation."""
     req = urllib.request.Request(
         RPC,
-        data=json.dumps(
-            {
-                "jsonrpc": "2.0",
-                "method": "eth_getHeaderByNumber",
-                "params": [BLOCK_HEX],
-                "id": 1,
-            }
-        ).encode(),
+        data=json.dumps({
+            "jsonrpc": "2.0",
+            "method": "eth_getHeaderByNumber",
+            "params": [BLOCK_HEX],
+            "id": 1,
+        }).encode(),
         headers={"Content-Type": "application/json"},
     )
     with urllib.request.urlopen(req, timeout=10) as resp:
@@ -155,6 +144,7 @@ def main() -> None:
     computed = keccak256_hex(header_rlp).lower()
     rpc_hash = require_field(block, "hash").lower()
 
+    print("RPC:", RPC)
     print("Block number:", int(require_field(block, "number"), 16))
     print("RPC block.hash:", rpc_hash)
     print("keccak(headerRlp):", computed)

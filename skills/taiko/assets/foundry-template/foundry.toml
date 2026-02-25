@@ -19,11 +19,15 @@ build_info = true
 extra_output = ["storageLayout"]
 
 [rpc_endpoints]
+taiko-mainnet = "https://rpc.mainnet.taiko.xyz"
 taiko-hoodi = "https://rpc.hoodi.taiko.xyz"
+ethereum-mainnet = "${ETH_RPC_URL}"
 ethereum-hoodi = "${HOODI_RPC_URL}"
 
 [etherscan]
+taiko-mainnet = { key = "${TAIKOSCAN_API_KEY}", url = "https://api.taikoscan.io/api", chain = 167000 }
 taiko-hoodi = { key = "${TAIKOSCAN_API_KEY}", url = "https://api-hoodi.taikoscan.io/api", chain = 167013 }
+ethereum-mainnet = { key = "${ETHERSCAN_API_KEY}", chain = 1 }
 ethereum-hoodi = { key = "${ETHERSCAN_API_KEY}", chain = 560048 }
 
 [fmt]

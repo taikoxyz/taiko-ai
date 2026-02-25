@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title TaikoHoodiAddresses
+/// @title HoodiAddresses
 /// @notice Protocol addresses for Taiko Hoodi (testnet) and Ethereum Hoodi (L1)
-/// @dev Source: taiko-alethia-protocol-v3.1.0
-///      Full list: see ../../references/contract-addresses.md
-library TaikoHoodiAddresses {
-    // ============ Taiko L2 (Chain ID: 167013) ============
+/// @dev Source: taiko-hoodi-contract-logs.md
+library HoodiAddresses {
+    // ============ Taiko Hoodi L2 (Chain ID: 167013) ============
 
     address internal constant L2_BRIDGE = 0x1670130000000000000000000000000000000001;
     address internal constant L2_ERC20_VAULT = 0x1670130000000000000000000000000000000002;
@@ -34,6 +33,6 @@ library TaikoHoodiAddresses {
 
     // ============ Chain IDs ============
 
-    uint64 internal constant TAIKO_HOODI_CHAIN_ID = 167_013;
-    uint64 internal constant ETHEREUM_HOODI_CHAIN_ID = 560_048;
+    uint64 internal constant L2_CHAIN_ID = 167_013;
+    uint64 internal constant L1_CHAIN_ID = 560_048;
 }
