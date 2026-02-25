@@ -17,6 +17,7 @@ Build, deploy, and verify smart contracts on Taiko Hoodi (testnet).
 | Block Explorer | `https://hoodi.taikoscan.io` |
 | EVM Version | Shanghai (Type-1 ZK-EVM) |
 | Solidity | `^0.8.24` (protocol uses `0.8.30`) |
+| x402 Facilitators | `https://facilitator.taiko.xyz`, `https://x402.taiko.xyz` |
 
 ## Quick Decision Guide
 
@@ -174,6 +175,27 @@ See `examples/` directory for:
 
 - **Code Diff**: https://codediff.taiko.xyz - Compare contract implementations
 - **Status Page**: https://status.taiko.xyz - Network status
+
+## x402 Payments
+
+Taiko runs [x402](https://www.x402.org) facilitators for HTTP-native payments. Both use scheme `exact`, x402 version `2`, and expose endpoints: `POST /verify`, `POST /settle`, `GET /supported`.
+
+### facilitator.taiko.xyz (Hoodi + Mainnet)
+
+| Property | Value |
+|----------|-------|
+| URL | `https://facilitator.taiko.xyz` |
+| Networks | `eip155:167013` (Hoodi), `eip155:167000` (Mainnet) |
+| Signer (Hoodi) | `0x81062a8b93fc840225bf879829145e3840057CD4` |
+| Signer (Mainnet) | `0x368F2B55172DFABcEa49A88508237B73C78Ed2f2` |
+
+### x402.taiko.xyz (Mainnet only)
+
+| Property | Value |
+|----------|-------|
+| URL | `https://x402.taiko.xyz` |
+| Network | `eip155:167000` (Mainnet) |
+| Signer | `0x2A67c750b770878196d258cEc987Bd530caFfBf7` |
 
 ## Troubleshooting
 
