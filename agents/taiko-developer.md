@@ -17,7 +17,7 @@ You are a senior blockchain developer specializing in Taiko network development.
 
 1. **ALWAYS use `FOUNDRY_PROFILE=layer2`** for all Foundry commands on Taiko L2
 2. Taiko uses **Shanghai EVM** — no Prague opcodes (PUSH0, MCOPY, TSTORE, TLOAD)
-3. Use `HoodiAddresses.sol` or `MainnetAddresses.sol` for protocol addresses
+3. Use `MainnetL1Addrs.sol` / `MainnetL2Addrs.sol` / `HoodiL1Addrs.sol` / `HoodiL2Addrs.sol` for protocol addresses
 4. Custom errors > require strings (gas efficiency)
 5. CEI pattern (Checks-Effects-Interactions) for state changes
 6. OpenZeppelin v5 contracts only
@@ -54,9 +54,9 @@ forge verify-contract $ADDRESS src/Contract.sol:Contract \
 
 ## Protocol Addresses
 
-For contract addresses, read the Solidity libraries:
-- `assets/foundry-template/src/MainnetAddresses.sol`
-- `assets/foundry-template/src/HoodiAddresses.sol`
+For contract addresses, read the Solidity libraries in `assets/foundry-template/src/`:
+- `MainnetL1Addrs.sol` / `MainnetL2Addrs.sol`
+- `HoodiL1Addrs.sol` / `HoodiL2Addrs.sol`
 
 L2 predefined addresses follow the pattern `0x{chainId}...0001` (Bridge), `...0005` (SignalService), `...10001` (TaikoAnchor).
 

@@ -3,8 +3,8 @@ pragma solidity ^0.8.24;
 
 import {Script, console} from "forge-std/Script.sol";
 import {HelloTaiko} from "../src/HelloTaiko.sol";
-import {HoodiAddresses} from "../src/HoodiAddresses.sol";
-import {MainnetAddresses} from "../src/MainnetAddresses.sol";
+import {HoodiL2Addrs} from "../src/HoodiL2Addrs.sol";
+import {MainnetL2Addrs} from "../src/MainnetL2Addrs.sol";
 
 /// @title DeployHelloTaiko
 /// @notice Basic deployment script for HelloTaiko
@@ -26,8 +26,8 @@ contract DeployHelloTaiko is Script {
 contract DeployToTaiko is Script {
     function run() public {
         require(
-            block.chainid == MainnetAddresses.L2_CHAIN_ID ||
-            block.chainid == HoodiAddresses.L2_CHAIN_ID,
+            block.chainid == MainnetL2Addrs.CHAIN_ID ||
+            block.chainid == HoodiL2Addrs.CHAIN_ID,
             "Not on a Taiko L2 network"
         );
 

@@ -32,7 +32,7 @@ Build, deploy, and verify smart contracts on Taiko — a Type-1 ZK-EVM based rol
 | Verify (Blockscout) | `forge verify-contract --verifier blockscout ...` |
 | Verify (Etherscan V2) | `forge verify-contract --verifier-url "https://api.etherscan.io/v2/api?chainid=$CHAIN_ID" ...` |
 | Fork testing | `FOUNDRY_PROFILE=layer2 forge test --fork-url $TAIKO_RPC` |
-| Contract addresses | [`MainnetAddresses.sol`](./assets/foundry-template/src/MainnetAddresses.sol) / [`HoodiAddresses.sol`](./assets/foundry-template/src/HoodiAddresses.sol) |
+| Contract addresses | `MainnetL1Addrs.sol` / `MainnetL2Addrs.sol` / `HoodiL1Addrs.sol` / `HoodiL2Addrs.sol` in [`assets/foundry-template/src/`](./assets/foundry-template/src/) |
 
 ## Protocol Knowledge
 

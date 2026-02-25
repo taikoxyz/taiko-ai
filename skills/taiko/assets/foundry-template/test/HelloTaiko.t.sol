@@ -3,8 +3,8 @@ pragma solidity ^0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {HelloTaiko} from "../src/HelloTaiko.sol";
-import {HoodiAddresses} from "../src/HoodiAddresses.sol";
-import {MainnetAddresses} from "../src/MainnetAddresses.sol";
+import {HoodiL2Addrs} from "../src/HoodiL2Addrs.sol";
+import {MainnetL2Addrs} from "../src/MainnetL2Addrs.sol";
 
 /// @title HelloTaikoTest
 /// @notice Tests for HelloTaiko contract
@@ -58,18 +58,18 @@ contract HelloTaikoTest is Test {
 /// @dev Run with: FOUNDRY_PROFILE=layer2 forge test --fork-url $TAIKO_RPC
 contract TaikoForkTest is Test {
     function _isTaikoFork() internal view returns (bool) {
-        return block.chainid == MainnetAddresses.L2_CHAIN_ID
-            || block.chainid == HoodiAddresses.L2_CHAIN_ID;
+        return block.chainid == MainnetL2Addrs.CHAIN_ID
+            || block.chainid == HoodiL2Addrs.CHAIN_ID;
     }
 
     function _bridgeAddress() internal view returns (address) {
-        if (block.chainid == MainnetAddresses.L2_CHAIN_ID) return MainnetAddresses.L2_BRIDGE;
-        return HoodiAddresses.L2_BRIDGE;
+        if (block.chainid == MainnetL2Addrs.CHAIN_ID) return MainnetL2Addrs.BRIDGE;
+        return HoodiL2Addrs.BRIDGE;
     }
 
     function _signalServiceAddress() internal view returns (address) {
-        if (block.chainid == MainnetAddresses.L2_CHAIN_ID) return MainnetAddresses.L2_SIGNAL_SERVICE;
-        return HoodiAddresses.L2_SIGNAL_SERVICE;
+        if (block.chainid == MainnetL2Addrs.CHAIN_ID) return MainnetL2Addrs.SIGNAL_SERVICE;
+        return HoodiL2Addrs.SIGNAL_SERVICE;
     }
 
     function test_BridgeExists() public view {
