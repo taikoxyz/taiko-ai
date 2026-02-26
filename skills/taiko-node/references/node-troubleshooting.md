@@ -1,163 +1,51 @@
 # Node Troubleshooting
 
-Common Taiko node errors and their solutions.
+## Docker Issues
 
-## Docker-Specific Issues
-
-### Genesis header hash mismatch
-
-**Error:** `Failed to ensure genesis block matched: genesis header hash mismatch`
-
-**Cause:** Using the wrong docker-compose file for the network.
-
-**Fix:** Use the correct file:
-- Alethia: `docker compose up -d`
-- Hoodi: `docker compose -f docker-compose-hoodi.yml up -d`
-
-### Database contains incompatible genesis
-
-**Cause:** Previously ran a different testnet.
-
-**Fix:**
-```bash
-docker compose down -v   # Removes old volumes
-```
-
-### Error: no service selected
-
-**Cause:** Outdated simple-taiko-node or missing `COMPOSE_PROFILES`.
-
-**Fix:** Pull latest version and set `COMPOSE_PROFILES` in `.env`:
-```bash
-git pull origin main && docker compose pull
-```
-
-### Unknown shorthand flag: 'd' in -d
-
-**Cause:** Using Docker Compose v1.
-
-**Fix:** Use `docker-compose up -d` (with hyphen) or upgrade to [Docker Compose v2](https://docs.docker.com/compose/install/linux/).
-
-### start-prover-relayer.sh: not found (Windows)
-
-**Cause:** Windows line endings (CRLF).
-
-**Fix:**
-```bash
-# Delete the node folder, then:
-git config --global core.autocrlf false
-git clone https://github.com/taikoxyz/simple-taiko-node.git
-```
-
-### Port already allocated
-
-**Error:** `Bind for 0.0.0.0:6060 failed: port is already allocated`
-
-**Fix:** Stop the conflicting service or change the port in `.env`.
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Genesis header hash mismatch | Wrong compose file | Alethia: `docker compose up -d`, Hoodi: `docker compose -f docker-compose-hoodi.yml up -d` |
+| Incompatible genesis DB | Old testnet data | `docker compose down -v` |
+| No service selected | Missing `COMPOSE_PROFILES` | Set in `.env`; run `git pull origin main && docker compose pull` |
+| Flag `-d` unknown | Docker Compose v1 | Use `docker-compose up -d` or upgrade to v2 |
+| start-prover-relayer.sh not found | Windows CRLF | `git config --global core.autocrlf false` then re-clone |
+| Port already allocated | Conflicting service | Change port in `.env` or stop other service |
 
 ## L1 Connection Issues
 
-### Beacon client not found
-
-**Error:** `Failed to decode tx list: beacon client not found`
-
-**Cause:** Missing or incorrect `--l1.beacon` flag / `L1_BEACON_HTTP` env var.
-
-**Fix:** Set `L1_BEACON_HTTP` in `.env` to your L1 beacon node URL.
-
-### Block batch iterator callback error (reorg check)
-
-**Error:** `failed to check whether L1 chain has been reorged`
-
-**Cause:** L1 node is out of sync or lacks archive mode.
-
-**Fix:**
-1. Enable Archive feature on your RPC provider (e.g., Blockpi)
-2. Or run your own L1 archive node
-
-### Dial tcp: connect: connection refused
-
-**Cause:** Cannot reach the RPC endpoint.
-
-**Fix:** Check firewall rules:
-```bash
-sudo ufw status
-```
-Ensure the relevant ports are allowed.
-
-### Dial tcp: lookup l2_execution_engine on 127.0.0.1:53: server misbehaving
-
-**Cause:** L1 node issues — out of sync or rate-limited.
-
-**Fix:**
-1. Verify L1 node sync status
-2. If rate-limited, increase limits or run your own L1 node
-
-### No contract code at given address
-
-**Cause:** Node on wrong network or L1 node still syncing.
-
-**Fix:** Wait for L1 node to fully sync before starting the L2 node.
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Beacon client not found | Missing `L1_BEACON_HTTP` | Set in `.env` to L1 beacon URL |
+| L1 reorg check failed | L1 out of sync / no archive | Enable archive on RPC provider or run own L1 node |
+| Connection refused | Firewall blocking | `sudo ufw status` — allow ports |
+| l2_execution_engine DNS misbehaving | L1 sync issues / rate-limited | Check L1 sync status; run local L1 |
+| No contract code at address | Wrong network or L1 still syncing | Wait for L1 to fully sync |
 
 ## P2P / Sync Issues
 
-### Looking for peers (stuck)
-
-**Fix:** Set `DISABLE_P2P_SYNC=true` in `.env` and restart. Then investigate P2P config.
-
-### Low peer count (< 6 for Alethia, < 3 for Hoodi)
-
-**Check:**
-1. `PUBLIC_IP` is set correctly and reachable from the internet
-2. TCP port `4001` is open
-3. UDP port `30303` is open
-4. `PRIV_RAW` is set (unique per node)
-
-### Node not receiving preconfirmed blocks
-
-**Check:**
-1. `ENABLE_PRECONFS_P2P=true` in `.env`
-2. P2P ports are open and reachable
-3. Peer count is healthy (check `peer tick` in logs)
+| Issue | Fix |
+|-------|-----|
+| Stuck "Looking for peers" | Set `DISABLE_P2P_SYNC=true`, restart, investigate P2P config |
+| Low peer count | Verify: `PUBLIC_IP` reachable, TCP 4001 open, UDP 30303 open, `PRIV_RAW` set |
+| No preconfirmed blocks | Set `ENABLE_PRECONFS_P2P=true`, verify ports + peer count via `peer tick` logs |
 
 ## Build Issues
 
-### Caught SIGILL in blst_cgo_init
-
-**Cause:** Older CPU with incompatible instruction set.
-
-**Fix:**
-```bash
-export CGO_CFLAGS="-O -D__BLST_PORTABLE__"
-export CGO_CFLAGS_ALLOW="-O -D__BLST_PORTABLE__"
-```
+| Error | Fix |
+|-------|-----|
+| SIGILL in blst_cgo_init | `export CGO_CFLAGS="-O -D__BLST_PORTABLE__"` and `CGO_CFLAGS_ALLOW="-O -D__BLST_PORTABLE__"` |
 
 ## Prover Issues
 
-### Required flag "l2.suggestedFeeRecipient" not set
+| Issue | Fix |
+|-------|-----|
+| l2.suggestedFeeRecipient not set | Remove spaces around `=` in `.env` |
+| EVM proof killed | Needs 16 GB+ RAM |
+| Block proposed, no proof in Raiko | `docker compose down` (no `-v`), set `PROVER_STARTING_BLOCK_ID=<block>` in `.env`, restart |
 
-**Cause:** Spaces in flag values in `.env` file.
+## Hoodi L1 Fusaka Beacon Flags
 
-**Fix:** Remove any spaces around `=` in `.env` fields.
-
-### Block proposed but no proof request in Raiko
-
-**Fix:**
-1. Get the assigned block number from logs
-2. `docker compose down` (do NOT use `-v`)
-3. Set `PROVER_STARTING_BLOCK_ID=<block_number>` in `.env`
-4. `docker compose up -d`
-5. Check: `docker compose logs taiko_client_prover_relayer | grep "<block_number>"`
-
-### Create EVM proof; Killed
-
-**Cause:** Insufficient RAM.
-
-**Fix:** Ensure machine meets minimum specs (16 GB RAM recommended).
-
-## Ethereum Hoodi L1 (Fusaka Upgrade)
-
-After the Fusaka upgrade, L1 beacon clients must run in supernode mode for blob availability:
+Required for blob availability after Fusaka upgrade:
 
 | Client | Flag |
 |--------|------|
@@ -167,11 +55,8 @@ After the Fusaka upgrade, L1 beacon clients must run in supernode mode for blob 
 | Lodestar | `--supernode` |
 | Nimbus | `--debug-peerdas-supernode` |
 
-Without this, your L2 node may experience blob unavailability or chain divergence.
+## Help
 
-## Getting Help
-
-If none of the above solutions work:
-- Check logs: `docker compose logs -f`
-- Visit [Taiko Discord](https://discord.gg/aGZYtKqMjj) — Node Operators channel
-- Check [docs](https://docs.taiko.xyz/guides/node-operators/node-troubleshooting/)
+- Logs: `docker compose logs -f`
+- Discord: https://discord.gg/aGZYtKqMjj
+- Docs: https://docs.taiko.xyz/guides/node-operators/node-troubleshooting/
