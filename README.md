@@ -4,6 +4,14 @@ An AI agent plugin for developing on Taiko networks.
 
 ## Installation
 
+### Any AI agent (Cursor, Copilot, Codex, Windsurf, Cline, etc.)
+
+```bash
+npx skills add taikoxyz/taiko-ai
+```
+
+### Claude Code (full experience with agent behavior, tool scoping, and branding)
+
 ```bash
 /plugin marketplace add taikoxyz/taiko-ai
 /plugin install taiko@taikoxyz
