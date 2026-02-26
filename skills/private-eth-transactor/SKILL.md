@@ -5,7 +5,7 @@ description: Use when performing privacy-preserving ETH transfers on Taiko using
 
 # Shadow — Private ETH Transfer on Taiko
 
-Shadow is a privacy-preserving ETH claim system on Taiko L2. Users deposit ETH to a deterministically-derived "target address" on L1 Ethereum, then claim on Taiko L2 using a ZK proof — without linking depositor and recipient.
+Shadow is a privacy-preserving ETH claim system on Taiko L2. An agent deposits ETH to a deterministically-derived "target address" on L1 Ethereum, then claims on Taiko L2 using a ZK proof — without linking depositor and recipient.
 
 ## Four-Stage Lifecycle
 
@@ -23,7 +23,7 @@ Create deposit → Fund target address (L1) → Generate ZK proof → Claim on L
 
 ## Mode 1: Server (Docker) — Recommended
 
-The Shadow server handles deposit files, proof generation, and calldata assembly via REST API.
+The Shadow server exposes a REST API for deposit management, proof generation, and claim calldata. All steps are fully scriptable.
 
 ### Start the server
 
@@ -82,16 +82,18 @@ Then **wait** for the L1 state root to be checkpointed on Taiko L2 (~few minutes
 
 ### Stage 3: Generate ZK proof
 
+Proof generation uses RISC Zero Groth16 and requires **Docker running**.
+
 ```bash
 # Start proof generation (async)
 curl -X POST http://localhost:3000/api/deposits/{id}/prove
 
-# Poll status (or connect via WebSocket /ws for real-time updates)
-curl http://localhost:3000/api/deposits/{id}
-# Look for status: "proved" in notes[*]
+# Poll until all notes are proved (check notes[*].status == "proved")
+until curl -s http://localhost:3000/api/deposits/{id} \
+  | jq -e '[.notes[].status] | all(. == "proved")' > /dev/null; do
+  sleep 30
+done
 ```
-
-Proof generation uses RISC Zero Groth16 and requires **Docker running**.
 
 ### Stage 4: Claim on L2
 
