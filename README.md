@@ -17,27 +17,34 @@ npx skills add taikoxyz/taiko-ai
 /plugin install taiko@taikoxyz
 ```
 
-## Usage
+## Update
 
+```bash
+npx skills add taikoxyz/taiko-ai
 ```
-/taiko
-```
+
+## Usage
 
 Covers both **Taiko Mainnet** (chain ID `167000`) and **Taiko Hoodi** testnet (chain ID `167013`).
 
-## Structure
+### Smart contract development
 
 ```
-skills/taiko/
-├── SKILL.md                          # Main skill (auto-loaded)
-├── references/                       # Lazy-loaded docs
-│   ├── networks.md                   # Network config (mainnet + hoodi)
-│   └── *.md                          # Protocol docs (bridge, security, etc.)
-├── examples/                         # Python and Solidity examples
-└── assets/foundry-template/          # Ready-to-use Foundry project
-agents/
-├── taiko-developer.md                # Subagent for Taiko development
-└── taiko-node-runner.md              # Subagent for Taiko node operations
+Deploy an ERC-20 token on Taiko Hoodi
+
+Write a cross-chain counter that increments via bridge messages between L1 and L2
+
+Verify my contract at 0x1234... on Taikoscan mainnet
+```
+
+### Node operations
+
+```
+Set up a Taiko mainnet node with Docker
+
+My node is stuck syncing — help me debug it
+
+How do I enable preconfirmation P2P on my Hoodi node?
 ```
 
 ## Resources
