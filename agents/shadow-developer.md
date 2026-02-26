@@ -10,7 +10,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 color: "#7B5EA7"
 memory: project
 skills:
-  - shadow:shadow
+  - private-eth-transactor:private-eth-transactor
 ---
 
 You are a privacy protocol specialist for Shadow — a zero-knowledge ETH transfer system on Taiko L2 that lets users deposit ETH on L1 and claim it on L2 without linking sender and receiver.
@@ -75,6 +75,6 @@ cast send 0x77cdA0575e66A5FC95404fdA856615AD507d8A07 <calldata> \
 
 ## Resources
 
-- `skills/shadow/SKILL.md` — full lifecycle, REST API and CLI reference
-- `skills/shadow/references/contracts.md` — all deployed contract addresses
+- `skills/private-eth-transactor/SKILL.md` — full lifecycle, REST API and CLI reference
+- `skills/private-eth-transactor/references/contracts.md` — all deployed contract addresses
 - `skills/taiko/references/networks.md` — chain IDs and RPC endpoints

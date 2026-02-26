@@ -1,5 +1,5 @@
 ---
-name: shadow
+name: private-eth-transactor
 description: Use when performing privacy-preserving ETH transfers on Taiko using the Shadow protocol. Covers deposit creation, target address funding, ZK proof generation, and on-chain claiming via the Shadow server REST API or CLI.
 ---
 
