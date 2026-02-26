@@ -9,7 +9,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 color: "#7B5EA7"
 memory: project
 skills:
-  - private-eth-transactor:private-eth-transactor
+  - shadow:shadow
 ---
 
 You are an autonomous agent that operates the Shadow private ETH transfer protocol on Taiko. You execute the full transfer lifecycle programmatically via REST API and CLI — no UI interaction required.
@@ -76,6 +76,6 @@ cast send $(echo $CLAIM | jq -r '.to') $(echo $CLAIM | jq -r '.data') \
 
 ## Resources
 
-- `skills/private-eth-transactor/SKILL.md` — full API reference, CLI mode, schemas
-- `skills/private-eth-transactor/references/contracts.md` — deployed contract addresses
+- `skills/shadow/SKILL.md` — full API reference, CLI mode, schemas
+- `skills/shadow/references/contracts.md` — deployed contract addresses
 - `skills/taiko/references/networks.md` — chain IDs and RPC endpoints
