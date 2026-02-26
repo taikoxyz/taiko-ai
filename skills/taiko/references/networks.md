@@ -2,7 +2,7 @@
 
 Taiko Mainnet (formerly known as Alethia) and Taiko Hoodi testnet configuration.
 
-Sources: [mainnet-contract-logs-L1.md](https://github.com/taikoxyz/taiko-mono/blob/main/packages/protocol/deployments/mainnet-contract-logs-L1.md), [mainnet-contract-logs-L2.md](https://github.com/taikoxyz/taiko-mono/blob/main/packages/protocol/deployments/mainnet-contract-logs-L2.md), [taiko-hoodi-contract-logs.md](https://github.com/taikoxyz/taiko-mono/blob/main/packages/protocol/deployments/taiko-hoodi-contract-logs.md)
+Sources: [`MainnetL1Addrs.sol`](../assets/foundry-template/src/MainnetL1Addrs.sol), [`MainnetL2Addrs.sol`](../assets/foundry-template/src/MainnetL2Addrs.sol), [`HoodiL1Addrs.sol`](../assets/foundry-template/src/HoodiL1Addrs.sol), [`HoodiL2Addrs.sol`](../assets/foundry-template/src/HoodiL2Addrs.sol)
 
 ## Overview
 
