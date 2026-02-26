@@ -25,7 +25,7 @@ FOUNDRY_PROFILE=layer2 forge create src/HelloTaikoCrossChain.sol:HelloTaikoCross
 
 | Chain | ID | L2 Bridge | L1 Bridge |
 |-------|------|-----------|-----------|
-| Taiko Alethia | 167000 | `0x1670000...0001` | `0xd60247...d8EC` |
+| Taiko Mainnet | 167000 | `0x1670000...0001` | `0xd60247...d8EC` |
 | Taiko Hoodi | 167013 | `0x1670130...0001` | `0x6a4cf6...Ed80` |
 
 ## Notes

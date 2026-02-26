@@ -23,7 +23,7 @@ npx skills add taikoxyz/taiko-ai
 /taiko
 ```
 
-Covers both **Taiko Alethia** (mainnet, chain ID `167000`) and **Taiko Hoodi** (testnet, chain ID `167013`).
+Covers both **Taiko Mainnet** (chain ID `167000`) and **Taiko Hoodi** testnet (chain ID `167013`).
 
 ## Structure
 
@@ -31,12 +31,13 @@ Covers both **Taiko Alethia** (mainnet, chain ID `167000`) and **Taiko Hoodi** (
 skills/taiko/
 ├── SKILL.md                          # Main skill (auto-loaded)
 ├── references/                       # Lazy-loaded docs
-│   ├── mainnet.md / hoodi.md         # Network-specific config
+│   ├── networks.md                   # Network config (mainnet + hoodi)
 │   └── *.md                          # Protocol docs (bridge, security, etc.)
 ├── examples/                         # Python and Solidity examples
 └── assets/foundry-template/          # Ready-to-use Foundry project
 agents/
-└── taiko-developer.md                # Subagent for Taiko development
+├── taiko-developer.md                # Subagent for Taiko development
+└── taiko-node-runner.md              # Subagent for Taiko node operations
 ```
 
 ## Resources
