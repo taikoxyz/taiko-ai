@@ -1,6 +1,6 @@
 # Taiko AI
 
-An AI agent plugin for developing on Taiko networks.
+AI agent skills for developing on and running nodes for Taiko networks.
 
 ## Installation
 
