@@ -1,29 +1,24 @@
 ---
 name: taiko
-description: Deploy, test, and interact with smart contracts on Taiko networks (Type-1 ZK-EVM rollup on Ethereum). Use when "Taiko", "Hoodi", "Alethia", or "L2 deployment" is mentioned.
+description: Deploy, test, and interact with smart contracts on Taiko networks (Type-1 ZK-EVM rollup on Ethereum). Use when "Taiko", "Hoodi", or "L2 deployment" is mentioned.
 ---
 
 # Taiko Development
 
 Build, deploy, and verify smart contracts on Taiko — a Type-1 ZK-EVM based rollup on Ethereum. Taiko targets 2-second block times powered by based preconfirmations.
 
-> **Network Selection:** If the user has not specified "hoodi" or "mainnet" (Alethia), always ask which network to use before proceeding.
+> **Network Selection:** If the user has not specified "hoodi" or "mainnet", always ask which network to use before proceeding.
 
 ## Networks
 
+See [Networks Reference](./references/networks.md) for full config, contract addresses, and API endpoints.
+
 | Network | Type | Chain ID | RPC | Explorer |
 |---------|------|----------|-----|----------|
-| Taiko Alethia | mainnet | `167000` | `https://rpc.mainnet.taiko.xyz` | https://taikoscan.io |
+| Taiko Mainnet | mainnet | `167000` | `https://rpc.mainnet.taiko.xyz` | https://taikoscan.io |
 | Taiko Hoodi | testnet | `167013` | `https://rpc.hoodi.taiko.xyz` | https://hoodi.taikoscan.io |
 | Ethereum Mainnet | L1 | `1` | See [chainlist.org](https://chainlist.org/chain/1) | https://etherscan.io |
 | Ethereum Hoodi | L1 testnet | `560048` | See [chainlist.org](https://chainlist.org/chain/560048) | https://hoodi.etherscan.io |
-
-| Property | Mainnet | Hoodi |
-|----------|---------|-------|
-| Bridge | https://bridge.taiko.xyz | https://bridge.hoodi.taiko.xyz |
-| Blockscout | https://blockscout.mainnet.taiko.xyz | https://blockscout.hoodi.taiko.xyz |
-| EVM Version | Shanghai | Shanghai |
-| Currency | ETH | ETH |
 
 ## Quick Decision Guide
 
@@ -38,6 +33,7 @@ Build, deploy, and verify smart contracts on Taiko — a Type-1 ZK-EVM based rol
 
 ## Protocol Knowledge
 
+- [Networks Reference](./references/networks.md) - Chain IDs, RPCs, contract addresses
 - [Protocol Overview](./references/protocol-overview.md) - Based rollup architecture
 - [EVM Compatibility](./references/evm-compatibility.md) - Shanghai EVM details
 - [Foundry Guide](./references/foundry-guide.md) - Complete Foundry setup
@@ -66,15 +62,9 @@ evm_version = "prague"
 
 [profile.layer2]
 evm_version = "shanghai"
-
-[rpc_endpoints]
-taiko-mainnet = "https://rpc.mainnet.taiko.xyz"
-taiko-hoodi = "https://rpc.hoodi.taiko.xyz"
-
-[etherscan]
-taiko-mainnet = { key = "${TAIKOSCAN_API_KEY}", url = "https://api.taikoscan.io/api", chain = 167000 }
-taiko-hoodi = { key = "${TAIKOSCAN_API_KEY}", url = "https://api-hoodi.taikoscan.io/api", chain = 167013 }
 ```
+
+See [Networks Reference](./references/networks.md#foundry-config) for RPC and Etherscan config.
 
 ## Deploy
 
@@ -136,11 +126,7 @@ cast send <TO> "functionName(args)" --rpc-url $TAIKO_RPC --private-key $PRIVATE_
 
 **Mainnet:** Bridge from Ethereum via https://bridge.taiko.xyz (24h cooldown for L2→L1)
 
-**Hoodi:** Get test ETH from L1 faucets, then bridge:
-- https://cloud.google.com/application/web3/faucet/ethereum/hoodi
-- https://faucets.chain.link/hoodi
-- https://faucet.quicknode.com/ethereum/hoodi
-- Bridge: https://bridge.hoodi.taiko.xyz
+**Hoodi:** Get test ETH from L1 faucets (see [Networks Reference](./references/networks.md#hoodi-faucets-ethereum-hoodi-l1)), then bridge via https://bridge.hoodi.taiko.xyz
 
 ## x402 Payments
 

@@ -4,7 +4,7 @@
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Genesis header hash mismatch | Wrong compose file | Alethia: `docker compose up -d`, Hoodi: `docker compose -f docker-compose-hoodi.yml up -d` |
+| Genesis header hash mismatch | Wrong compose file | Mainnet: `docker compose up -d`, Hoodi: `docker compose -f docker-compose-hoodi.yml up -d` |
 | Incompatible genesis DB | Old testnet data | `docker compose down -v` |
 | No service selected | Missing `COMPOSE_PROFILES` | Set in `.env`; run `git pull origin main && docker compose pull` |
 | Flag `-d` unknown | Docker Compose v1 | Use `docker-compose up -d` or upgrade to v2 |

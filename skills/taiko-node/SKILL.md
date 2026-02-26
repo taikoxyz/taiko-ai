@@ -1,11 +1,11 @@
 ---
 name: taiko-node
-description: Set up, run, and manage Taiko nodes on Hoodi testnet or Alethia mainnet using Docker or from source. Use when "run node", "node operator", "simple-taiko-node", "taiko-geth", "taiko-client", or "sync" is mentioned.
+description: Set up, run, and manage Taiko nodes on Hoodi testnet or mainnet using Docker or from source. Use when "run node", "node operator", "simple-taiko-node", "taiko-geth", "taiko-client", or "sync" is mentioned.
 ---
 
 # Taiko Node Operations
 
-Run Taiko Alethia (mainnet) or Hoodi (testnet) nodes. A node has two components: `taiko-geth` (execution engine) and `taiko-client` (consensus client).
+Run Taiko Mainnet or Hoodi (testnet) nodes. A node has two components: `taiko-geth` (execution engine) and `taiko-client` (consensus client).
 
 > **Network Selection:** Always ask which network if user hasn't specified "hoodi" or "mainnet".
 
@@ -13,7 +13,7 @@ Run Taiko Alethia (mainnet) or Hoodi (testnet) nodes. A node has two components:
 
 | Network | Chain ID | L1 Required | RPC |
 |---------|----------|-------------|-----|
-| Taiko Alethia | `167000` | Ethereum Mainnet | `https://rpc.mainnet.taiko.xyz` |
+| Taiko Mainnet | `167000` | Ethereum Mainnet | `https://rpc.mainnet.taiko.xyz` |
 | Taiko Hoodi | `167013` | Ethereum Hoodi (560048) | `https://rpc.hoodi.taiko.xyz` |
 
 ## Quick Decision Guide
@@ -61,7 +61,7 @@ Open firewall: TCP `4001`, UDP `30303`. Verify: `docker compose logs -f | grep "
 
 | | TaikoInbox | TaikoAnchor | Checkpoint Sync |
 |-|------------|-------------|-----------------|
-| **Alethia** | `0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a` | `0x1670000000000000000000000000000000010001` | `https://rpc.mainnet.taiko.xyz` |
+| **Mainnet** | `0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a` | `0x1670000000000000000000000000000000010001` | `https://rpc.mainnet.taiko.xyz` |
 | **Hoodi** | `0xf6eA848c7d7aC83de84db45Ae28EAbf377fe0eF9` | `0x1670130000000000000000000000000000010001` | `https://rpc.hoodi.taiko.xyz` |
 
 ## CLI Reference (Docker)
@@ -89,6 +89,6 @@ Full list: [Troubleshooting Reference](./references/node-troubleshooting.md)
 
 ## Resources
 
-- **Docs**: https://docs.taiko.xyz/guides/node-operators/run-a-taiko-alethia-node-with-docker/
+- **Docs**: https://docs.taiko.xyz/guides/node-operators/
 - **Releases**: https://github.com/taikoxyz/simple-taiko-node/releases
 - **Discord**: https://discord.gg/aGZYtKqMjj

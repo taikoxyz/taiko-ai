@@ -36,14 +36,14 @@ Without P2P, the node only updates chain head from on-chain events.
 
 ```bash
 docker compose down -v                                   # Remove old testnet data if needed
-docker compose up -d                                     # Alethia mainnet
+docker compose up -d                                     # Mainnet
 docker compose -f docker-compose-hoodi.yml up -d         # Hoodi testnet
 ```
 
 ## Verify
 
 ```bash
-# Check chain ID (0x28c58=Alethia, 0x28c65=Hoodi)
+# Check chain ID (0x28c58=Mainnet, 0x28c65=Hoodi)
 curl -s http://localhost:8547 -X POST -H "Content-Type: application/json" \
   --data '{"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}'
 

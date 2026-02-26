@@ -25,7 +25,7 @@
     },
     {
       "name": "taiko-node",
-      "description": "Set up, run, and manage Taiko nodes on Hoodi testnet or Alethia mainnet using Docker or from source",
+      "description": "Set up, run, and manage Taiko nodes on Hoodi testnet or mainnet using Docker or from source",
       "version": "1.3.0",
       "author": {
         "name": "Taiko Labs"

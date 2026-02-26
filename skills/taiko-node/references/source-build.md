@@ -29,7 +29,7 @@ openssl rand -hex 32 > jwt.txt   # Copy to both taiko-geth and taiko-client dirs
 
 ### 2. Start taiko-geth (start before taiko-client)
 
-**Alethia mainnet** (`--networkid 167000`):
+**Mainnet** (`--networkid 167000`):
 ```bash
 ./build/bin/geth --taiko --networkid 167000 --gcmode archive \
   --datadir ./data/taiko-geth --metrics --metrics.expensive --metrics.addr "0.0.0.0" \
@@ -59,7 +59,7 @@ export L1_WS=ws://<L1_NODE>:8546
 export L1_BEACON_URL=http://<L1_NODE>:5052
 ```
 
-**Alethia mainnet:**
+**Mainnet:**
 ```bash
 ./bin/taiko-client driver \
   --l1.ws ${L1_WS} --l2.ws ws://localhost:28546 --l1.beacon ${L1_BEACON_URL} --l2.auth http://localhost:28551 \
