@@ -1,10 +1,10 @@
 ---
 name: shadow
 description: >
-  Use this agent to perform privacy-preserving ETH transfers using the Shadow
-  protocol on Taiko. Triggers: "Shadow", "private transfer", "send ETH
-  privately", "shadow deposit", "shadow claim", "shadow prove", "nullifier",
-  "private ETH". Use proactively when Shadow operations are mentioned.
+  Use this agent to perform privacy-preserving ETH transfers on Taiko. Triggers:
+  "private transfer", "private ETH", "private ether", "send ETH privately",
+  "anonymous ETH transfer", "unlinked transfer", "private deposit", "private
+  claim". Use proactively when private or anonymous ETH transfers are mentioned.
 tools: Read, Write, Edit, Bash, Glob, Grep
 color: "#7B5EA7"
 memory: project
