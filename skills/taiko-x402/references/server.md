@@ -15,7 +15,7 @@ npm install @x402/next @x402/evm @x402/core
 go get github.com/coinbase/x402/go
 
 # Python (FastAPI or Flask)
-pip install "x402[fastapi]"   # or x402[flask]
+pip install "x402[fastapi,evm]"   # or x402[flask,evm]
 ```
 
 ## Express (TypeScript)

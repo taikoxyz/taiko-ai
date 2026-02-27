@@ -20,9 +20,8 @@ npm install @x402/axios @x402/evm
 go get github.com/coinbase/x402/go
 
 # Python
-pip install "x402[httpx]"      # async (recommended)
-pip install "x402[requests]"   # sync
-pip install eth_account         # wallet signer
+pip install "x402[httpx,evm]"      # async (recommended)
+pip install "x402[requests,evm]"   # sync
 ```
 
 ## TypeScript — fetch wrapper
@@ -70,6 +69,7 @@ console.log(response.data);
 
 ```go
 import (
+    "log"
     "net/http"
     "os"
 
@@ -80,6 +80,9 @@ import (
 )
 
 signer, err := evmsigner.NewClientSignerFromPrivateKey(os.Getenv("EVM_PRIVATE_KEY"))
+if err != nil {
+    log.Fatal(err)
+}
 
 client := x402.Newx402Client()
 client.Register("eip155:*", evmclient.NewExactEvmScheme(signer))
@@ -88,6 +91,10 @@ httpX402 := x402http.Newx402HTTPClient(client)
 httpClient := x402http.WrapHTTPClientWithPayment(http.DefaultClient, httpX402)
 
 resp, err := httpClient.Get("https://your-api.example.com/api/data")
+if err != nil {
+    log.Fatal(err)
+}
+_ = resp // use resp as needed
 ```
 
 ## Python (async with httpx)

@@ -29,7 +29,7 @@ cast call 0x77cdA0575e66A5FC95404fdA856615AD507d8A07 \
   --rpc-url https://rpc.hoodi.taiko.xyz
 
 # Get server config (includes live contract addresses)
-curl http://localhost:3000/api/config
+curl http://localhost:$SHADOW_PORT/api/config
 ```
 
 ## L1 Contract (CheckpointStore)
