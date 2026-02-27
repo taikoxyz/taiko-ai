@@ -11,9 +11,6 @@ npm install @x402/express @x402/evm @x402/core
 # Next.js
 npm install @x402/next @x402/evm @x402/core
 
-# Hono
-npm install @x402/hono @x402/evm @x402/core
-
 # Go
 go get github.com/coinbase/x402/go
 

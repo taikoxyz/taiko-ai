@@ -7,8 +7,6 @@
 | `https://facilitator.taiko.xyz` | Taiko Mainnet + Hoodi | Primary — use for all deployments |
 | `https://x402.taiko.xyz` | Taiko Mainnet only | Alternative for mainnet |
 
-No CDP API key required. These are Taiko-operated, independent of Coinbase CDP.
-
 ## CAIP-2 Network Identifiers
 
 | Network | Chain ID | CAIP-2 |
