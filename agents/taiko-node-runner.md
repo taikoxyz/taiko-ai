@@ -39,6 +39,20 @@ cp .env.sample .env          # mainnet (.env.sample.hoodi for testnet)
 docker compose up -d         # mainnet (add -f docker-compose-hoodi.yml for testnet)
 ```
 
+## Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| `Genesis header hash mismatch` | Wrong compose file — mainnet: `docker compose up -d`, Hoodi: add `-f docker-compose-hoodi.yml` |
+| `Incompatible genesis DB` | Old testnet data: `docker compose down -v` |
+| `No service selected` | Set `COMPOSE_PROFILES` in `.env`, then `git pull && docker compose pull` |
+| `Beacon client not found` | Set `L1_BEACON_HTTP` in `.env` |
+| `l2_execution_engine DNS misbehaving` | L1 rate-limited or unsynced — run a local L1 node |
+| Stuck "Looking for peers" | Set `DISABLE_P2P_SYNC=true`, restart, investigate P2P config |
+| Low peer count | Check: `PUBLIC_IP` reachable, TCP 4001 open, UDP 30303 open |
+| No preconfirmed blocks | Set `ENABLE_PRECONFS_P2P=true`, verify ports and peer count |
+| EVM proof killed | Prover needs ≥ 16 GB RAM |
+
 ## Resources
 
 Refer to skill docs for details:

@@ -1,9 +1,11 @@
 ---
 name: taiko-developer
 description: >
-  Use this agent when developing, testing, or deploying smart contracts
-  on Taiko networks. Triggers: "Taiko", "Hoodi", "L2 deployment",
-  "bridge contract", "cross-chain". Use proactively after writing Solidity code.
+  Use this agent when developing, testing, or deploying smart contracts on Taiko
+  networks. Triggers: "Taiko", "Hoodi", "L2 deployment", "bridge contract",
+  "cross-chain", "forge deploy", "verify contract", "TaikoToken", "Taikoscan",
+  "L1 to L2", "L2 to L1", "x402". Use proactively after writing Solidity code
+  or when a user asks about deploying, verifying, or bridging on Taiko.
 tools: Read, Write, Edit, Bash, Glob, Grep
 color: "#E81899"
 memory: project
