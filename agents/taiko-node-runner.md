@@ -1,10 +1,10 @@
 ---
 name: taiko-node-runner
 description: >
-  Use this agent when setting up, running, managing, or troubleshooting
-  Taiko nodes on Hoodi testnet or mainnet. Triggers: "run node",
-  "node operator", "simple-taiko-node", "taiko-geth", "taiko-client",
-  "sync node", "P2P", "preconfirmations". Use proactively for node operations.
+  Taiko node operations specialist for Hoodi testnet and Mainnet. Sets up, manages,
+  and troubleshoots nodes using Docker or source build. Triggers: "run node",
+  "node operator", "simple-taiko-node", "taiko-geth", "taiko-client", "sync node",
+  "P2P", "preconfirmations". Use proactively for node setup and operations.
 tools: Read, Write, Edit, Bash, Glob, Grep
 color: "#1E88E5"
 memory: project

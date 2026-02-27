@@ -1,6 +1,6 @@
 ---
 name: taiko
-description: Deploy, test, and interact with smart contracts on Taiko networks (Type-1 ZK-EVM rollup on Ethereum). Use when "Taiko", "Hoodi", or "L2 deployment" is mentioned.
+description: Deploy, test, and interact with smart contracts on Taiko networks (Type-1 ZK-EVM rollup on Ethereum). Use when "Taiko", "Hoodi", "L2 deployment", "bridge", "forge", or "Taikoscan" is mentioned. For x402 payment APIs use the taiko-x402 skill instead.
 ---
 
 # Taiko Development
@@ -130,12 +130,7 @@ cast send <TO> "functionName(args)" --rpc-url $TAIKO_RPC --private-key $PRIVATE_
 
 ## x402 Payments
 
-Taiko runs [x402](https://www.x402.org) facilitators for HTTP-native payments.
-
-| Facilitator | Networks | Signer |
-|-------------|----------|--------|
-| `https://facilitator.taiko.xyz` | Mainnet + Hoodi | Mainnet: `0x368F...d2f2`, Hoodi: `0x8106...7CD4` |
-| `https://x402.taiko.xyz` | Mainnet only | `0x2A67...fBf7` |
+Taiko runs live x402 facilitators for HTTP-native USDC payments on Mainnet and Hoodi. For building payment-protected APIs or AI agent clients, use the dedicated **[taiko-x402 skill](../taiko-x402/SKILL.md)** — it covers seller middleware, buyer client setup, and full facilitator configuration.
 
 ## Troubleshooting
 

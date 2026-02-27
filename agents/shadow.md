@@ -1,11 +1,12 @@
 ---
 name: shadow
 description: >
-  Use this agent to perform privacy-preserving ETH transfers on Taiko. Triggers:
-  "private transfer", "private ETH", "private ether", "send ETH privately",
-  "anonymous ETH transfer", "unlinked transfer", "private deposit", "private
-  claim", "break transaction chain", "hide ETH sender", "unlinked ETH". Use
-  proactively when private, anonymous, or untraceable ETH transfers are mentioned.
+  Privacy-preserving ETH transfer specialist for Taiko. Executes the full
+  deposit-prove-claim lifecycle using ZK proofs to unlink sender from recipient.
+  Triggers: "private transfer", "private ETH", "private ether", "send ETH
+  privately", "anonymous ETH transfer", "unlinked transfer", "private deposit",
+  "private claim", "break transaction chain", "hide ETH sender", "unlinked ETH".
+  Use proactively when private, anonymous, or untraceable ETH transfers are mentioned.
 tools: Read, Write, Edit, Bash, Glob, Grep
 color: "#7B5EA7"
 memory: project
