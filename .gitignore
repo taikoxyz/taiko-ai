@@ -37,3 +37,6 @@ build/
 # Coverage
 coverage/
 lcov.info
+
+# Research / working notes
+research.md

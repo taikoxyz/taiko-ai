@@ -14,12 +14,4 @@ Taiko-specific security checks for pre-deployment review.
 
 ## Cross-Chain Security
 
-```solidity
-function onMessageReceived(bytes calldata _data) external {
-    require(msg.sender == address(bridge), "Not bridge");
-    IBridge.Context memory ctx = bridge.context();
-    require(ctx.srcChainId == expectedChain, "Wrong chain");
-    require(ctx.from == trustedSender, "Untrusted sender");
-    // CEI: effects before interactions
-}
-```
+See [Bridge Interface](./bridge-interface.md#receive-message) for the full receiver pattern. Key checks: verify `msg.sender == bridge`, validate `ctx.srcChainId` and `ctx.from`, then follow CEI ordering.

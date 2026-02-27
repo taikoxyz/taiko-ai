@@ -37,9 +37,9 @@ Then use: `forge script ... --rpc-url taiko-hoodi --verify`
 ## Debugging Commands
 
 ```bash
-cast run <TX_HASH> --rpc-url https://rpc.hoodi.taiko.xyz    # Trace failed tx
-cast estimate <TO> "fn()" --rpc-url https://rpc.hoodi.taiko.xyz  # Estimate gas
-cast storage <CONTRACT> <SLOT> --rpc-url https://rpc.hoodi.taiko.xyz  # Read storage
+cast run <TX_HASH> --rpc-url $TAIKO_RPC    # Trace failed tx
+cast estimate <TO> "fn()" --rpc-url $TAIKO_RPC  # Estimate gas
+cast storage <CONTRACT> <SLOT> --rpc-url $TAIKO_RPC  # Read storage
 ```
 
 ## Testing Matrix

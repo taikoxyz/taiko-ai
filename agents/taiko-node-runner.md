@@ -1,12 +1,12 @@
 ---
 name: taiko-node-runner
 description: >
-  Use this agent when setting up, running, managing, or troubleshooting
-  Taiko nodes on Hoodi testnet or mainnet. Triggers: "run node",
-  "node operator", "simple-taiko-node", "taiko-geth", "taiko-client",
-  "sync node", "P2P", "preconfirmations". Use proactively for node operations.
+  Taiko node operations specialist for Hoodi testnet and Mainnet. Sets up, manages,
+  and troubleshoots nodes using Docker or source build. Triggers: "run node",
+  "node operator", "simple-taiko-node", "taiko-geth", "taiko-client", "sync node",
+  "P2P", "preconfirmations". Use proactively for node setup and operations.
 tools: Read, Write, Edit, Bash, Glob, Grep
-color: "#E81899"
+color: "#1E88E5"
 memory: project
 skills:
   - taiko-node:taiko-node
@@ -38,6 +38,20 @@ cp .env.sample .env          # mainnet (.env.sample.hoodi for testnet)
 # Edit .env: L1_ENDPOINT_WS, L1_BEACON_HTTP, COMPOSE_PROFILES
 docker compose up -d         # mainnet (add -f docker-compose-hoodi.yml for testnet)
 ```
+
+## Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| `Genesis header hash mismatch` | Wrong compose file — mainnet: `docker compose up -d`, Hoodi: add `-f docker-compose-hoodi.yml` |
+| `Incompatible genesis DB` | Old testnet data: `docker compose down -v` |
+| `No service selected` | Set `COMPOSE_PROFILES` in `.env`, then `git pull && docker compose pull` |
+| `Beacon client not found` | Set `L1_BEACON_HTTP` in `.env` |
+| `l2_execution_engine DNS misbehaving` | L1 rate-limited or unsynced — run a local L1 node |
+| Stuck "Looking for peers" | Set `DISABLE_P2P_SYNC=true`, restart, investigate P2P config |
+| Low peer count | Check: `PUBLIC_IP` reachable, TCP 4001 open, UDP 30303 open |
+| No preconfirmed blocks | Set `ENABLE_PRECONFS_P2P=true`, verify ports and peer count |
+| EVM proof killed | Prover needs ≥ 16 GB RAM |
 
 ## Resources
 
