@@ -33,12 +33,35 @@ curl -fsSL https://raw.githubusercontent.com/taikoxyz/shadow/main/start.sh | sh
 
 # Or, if you've cloned the shadow repo
 ./start.sh
-
-# Force latest image
-./start.sh --pull
 ```
 
 Server is ready when `http://localhost:3000/api/health` returns `200`.
+
+**start.sh flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--pull` | Force pull latest image from registry |
+| `--build` | Build image from source |
+| `--clean` | Remove all shadow images/containers and exit |
+| `--clear-cache` | Remove Docker BuildKit cache and exit |
+| `--benchmark` | Monitor CPU/memory during proving, write metrics to workspace |
+| `--memory SIZE` | Container memory limit (default: `8g`) |
+| `--cpus N` | Container CPU limit (default: `4`) |
+| `--verbose [LEVEL]` | Server log verbosity: `info` (default), `debug`, `trace` |
+| `--prove FILE` | Prove a deposit file directly (no server started) |
+| `--output PATH` | Output path for proof when using `--prove` |
+| `[PORT]` | Pin to a specific port (default: first free in 3000–3099) |
+
+**Minimum Docker resources:** 4 CPUs, 8 GB RAM, 10 GB disk.
+
+#### `--prove` mode (headless proving)
+
+Prove a deposit file without starting the full server — useful for scripted pipelines:
+
+```bash
+./start.sh --prove deposits/my-deposit.json --output /tmp/proofs/
+```
 
 ### Stage 1: Create deposit
 
@@ -85,7 +108,7 @@ Then **wait** for the L1 state root to be checkpointed on Taiko L2 (~few minutes
 Proof generation uses RISC Zero Groth16 and requires **Docker running**.
 
 ```bash
-# Start proof generation (async)
+# Start proof generation (async); add ?force=true to overwrite an existing proof
 curl -X POST http://localhost:3000/api/deposits/{id}/prove
 
 # Poll until all notes are proved (check notes[*].status == "proved")
@@ -116,6 +139,8 @@ The claimer address does not need to hold the deposit funds. ETH is minted direc
 
 Use when the Shadow server is not available. Requires the shadow repo cloned with Node.js + Rust + Docker.
 
+> **Always pass `--shadow 0x77cdA0575e66A5FC95404fdA856615AD507d8A07`** when claiming on Hoodi — the CLI's hardcoded default address is outdated.
+
 ```bash
 # One-time: build the prover binary
 node packages/risc0-prover/scripts/install-cli.mjs
@@ -136,9 +161,10 @@ node packages/risc0-prover/scripts/shadowcli.mjs validate \
 node packages/risc0-prover/scripts/shadowcli.mjs prove-all \
   --deposit deposits/my-deposit.json
 
-# Claim all notes
+# Claim all notes (always pass --shadow explicitly — default address is outdated)
 node packages/risc0-prover/scripts/shadowcli.mjs claim-all \
   --deposit deposits/my-deposit.json \
+  --shadow 0x77cdA0575e66A5FC95404fdA856615AD507d8A07 \
   --private-key $CLAIMER_KEY
 ```
 
@@ -157,7 +183,8 @@ node packages/risc0-prover/scripts/shadowcli.mjs claim-all \
 | POST | `/api/deposits/:id/prove` | Start proof generation |
 | DELETE | `/api/deposits/:id/proof` | Delete proof file |
 | GET | `/api/deposits/:id/notes/:idx/claim-tx` | Get claim calldata |
-| POST | `/api/deposits/:id/notes/:idx/refresh` | Refresh on-chain claim status |
+| GET | `/api/deposits/:id/notes/:idx/status` | Get on-chain claim status (`unclaimed`\|`claimed`\|`unknown`) |
+| POST | `/api/deposits/:id/notes/:idx/refresh` | Force refresh on-chain claim status |
 | GET | `/api/queue` | Proof queue status |
 | WS | `/ws` | Real-time events |
 
