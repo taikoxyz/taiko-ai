@@ -25,10 +25,7 @@ Use these CAIP-2 identifiers everywhere `network` is specified in x402 route con
 
 > USDC on Taiko is bridged from Ethereum. Confirm the contract address before deploying — do not hardcode without verifying on the explorer.
 
-To get USDC for testing on Hoodi:
-1. Get test ETH from the Hoodi L1 faucet (see taiko:references/networks.md)
-2. Bridge ETH to Taiko Hoodi at https://bridge.hoodi.taiko.xyz
-3. Swap ETH → USDC via a DEX on Hoodi, or use a Hoodi USDC faucet if available
+For USDC on Hoodi testnet, see [client setup — Getting USDC](./client.md#getting-usdc-on-taiko).
 
 ## Configuring the Taiko Facilitator in Code
 
@@ -69,18 +66,7 @@ schemes := []ginmw.SchemeConfig{
 
 ### Python
 
-```python
-from x402.http import FacilitatorConfig, HTTPFacilitatorClient
-from x402.mechanisms.evm.exact import ExactEvmServerScheme
-from x402.server import x402ResourceServer
-
-facilitator = HTTPFacilitatorClient(
-    FacilitatorConfig(url="https://facilitator.taiko.xyz")
-)
-server = x402ResourceServer(facilitator)
-server.register("eip155:167000", ExactEvmServerScheme())  # Mainnet
-server.register("eip155:167013", ExactEvmServerScheme())  # Hoodi
-```
+Same pattern — see [server.md FastAPI example](./server.md#fastapi-python) for full setup. Key imports: `from x402.http import FacilitatorConfig, HTTPFacilitatorClient` and `from x402.mechanisms.evm.exact import ExactEvmServerScheme`.
 
 ## Verifying the Facilitator
 

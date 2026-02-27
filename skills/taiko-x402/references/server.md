@@ -27,7 +27,7 @@ import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
 
 const app = express();
-const payTo = process.env.WALLET_ADDRESS!;  // your receiving wallet
+const payTo = process.env.WALLET_ADDRESS!;
 
 const facilitatorClient = new HTTPFacilitatorClient({
   url: "https://facilitator.taiko.xyz",
@@ -44,8 +44,8 @@ app.use(
         accepts: [
           {
             scheme: "exact",
-            price: "$0.001",           // USDC amount in dollars
-            network: "eip155:167013",  // Hoodi for testing; use 167000 for mainnet
+            price: "$0.001",
+            network: "eip155:167013",
             payTo,
           },
         ],
@@ -66,32 +66,13 @@ app.listen(3000);
 
 ## Next.js (middleware.ts)
 
+Uses `@x402/next` with `paymentProxy` instead of Express middleware. Same facilitator and scheme registration.
+
 ```typescript
 import { paymentProxy, x402ResourceServer } from "@x402/next";
-import { ExactEvmScheme } from "@x402/evm/exact/server";
-import { HTTPFacilitatorClient } from "@x402/core/server";
+// ... same facilitatorClient + server setup as Express
 
-const payTo = process.env.WALLET_ADDRESS!;
-
-const facilitatorClient = new HTTPFacilitatorClient({
-  url: "https://facilitator.taiko.xyz",
-});
-
-const server = new x402ResourceServer(facilitatorClient)
-  .register("eip155:167000", new ExactEvmScheme())
-  .register("eip155:167013", new ExactEvmScheme());
-
-export const middleware = paymentProxy(
-  {
-    "/api/protected": {
-      accepts: [{ scheme: "exact", price: "$0.01", network: "eip155:167013", payTo }],
-      description: "Protected endpoint",
-      mimeType: "application/json",
-    },
-  },
-  server,
-);
-
+export const middleware = paymentProxy(routeConfig, server);
 export const config = { matcher: ["/api/protected/:path*"] };
 ```
 

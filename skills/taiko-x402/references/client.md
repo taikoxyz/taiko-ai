@@ -38,31 +38,17 @@ registerExactEvmScheme(client, { signer });
 
 const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
-// Payment handled automatically — no 402 visible to caller
 const response = await fetchWithPayment("https://your-api.example.com/api/data");
 const data = await response.json();
 ```
 
 ## TypeScript — Axios
 
+Import from `@x402/axios` instead; same signer/scheme registration as fetch above:
+
 ```typescript
 import { wrapAxiosWithPayment, x402Client } from "@x402/axios";
-import { registerExactEvmScheme } from "@x402/evm/exact/client";
-import { privateKeyToAccount } from "viem/accounts";
-import axios from "axios";
-
-const signer = privateKeyToAccount(process.env.EVM_PRIVATE_KEY as `0x${string}`);
-
-const client = new x402Client();
-registerExactEvmScheme(client, { signer });
-
-const api = wrapAxiosWithPayment(
-  axios.create({ baseURL: "https://your-api.example.com" }),
-  client,
-);
-
-const response = await api.get("/api/data");
-console.log(response.data);
+const api = wrapAxiosWithPayment(axios.create({ baseURL: url }), client);
 ```
 
 ## Go
@@ -97,7 +83,7 @@ if err != nil {
 _ = resp // use resp as needed
 ```
 
-## Python (async with httpx)
+## Python
 
 ```python
 import asyncio, os
@@ -119,35 +105,13 @@ async def main():
 asyncio.run(main())
 ```
 
-## Python (sync with requests)
-
-```python
-import os
-from eth_account import Account
-from x402 import x402ClientSync
-from x402.http.clients import x402_requests
-from x402.mechanisms.evm import EthAccountSigner
-from x402.mechanisms.evm.exact.register import register_exact_evm_client
-
-client = x402ClientSync()
-account = Account.from_key(os.getenv("EVM_PRIVATE_KEY"))
-register_exact_evm_client(client, EthAccountSigner(account))
-
-with x402_requests(client) as session:
-    response = session.get("https://your-api.example.com/api/data")
-    print(response.text)
-```
+**Sync variant:** Use `x402ClientSync` + `x402_requests` context manager instead of `x402Client` + `x402HttpxClient`. Import from the same `x402.http.clients` module.
 
 ## Getting USDC on Taiko
 
-**Hoodi testnet:**
-1. Get L1 Hoodi ETH from a faucet (see taiko:references/networks.md for faucet links)
-2. Bridge to Taiko Hoodi at https://bridge.hoodi.taiko.xyz
-3. Swap ETH → USDC on a Hoodi DEX
+**Mainnet:** Bridge USDC from Ethereum via https://bridge.taiko.xyz
 
-**Mainnet:**
-1. Get USDC on Ethereum
-2. Bridge to Taiko via https://bridge.taiko.xyz
+**Hoodi:** Get L1 test ETH from a faucet (see `taiko:references/networks.md`), bridge via https://bridge.hoodi.taiko.xyz, swap to USDC.
 
 ## Error Handling
 
@@ -168,15 +132,7 @@ try {
 
 ## Discovering Services (Bazaar)
 
-```typescript
-import { HTTPFacilitatorClient } from "@x402/core/http";
-
-// List x402 services available via Taiko facilitator
-const facilitator = new HTTPFacilitatorClient({
-  url: "https://facilitator.taiko.xyz",
-});
-
-// Bazaar discovery (if facilitator supports it)
-const res = await fetch("https://facilitator.taiko.xyz/discovery/resources");
-const services = await res.json();
+```bash
+# List discoverable x402 services (if facilitator supports Bazaar)
+curl -s https://facilitator.taiko.xyz/discovery/resources
 ```

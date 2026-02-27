@@ -11,14 +11,7 @@ Build, deploy, and verify smart contracts on Taiko — a Type-1 ZK-EVM based rol
 
 ## Networks
 
-See [Networks Reference](./references/networks.md) for full config, contract addresses, and API endpoints.
-
-| Network | Type | Chain ID | RPC | Explorer |
-|---------|------|----------|-----|----------|
-| Taiko Mainnet | mainnet | `167000` | `https://rpc.mainnet.taiko.xyz` | https://taikoscan.io |
-| Taiko Hoodi | testnet | `167013` | `https://rpc.hoodi.taiko.xyz` | https://hoodi.taikoscan.io |
-| Ethereum Mainnet | L1 | `1` | See [chainlist.org](https://chainlist.org/chain/1) | https://etherscan.io |
-| Ethereum Hoodi | L1 testnet | `560048` | See [chainlist.org](https://chainlist.org/chain/560048) | https://hoodi.etherscan.io |
+See [Networks Reference](./references/networks.md) for chain IDs, RPCs, contract addresses, explorers, and API endpoints.
 
 ## Quick Decision Guide
 
