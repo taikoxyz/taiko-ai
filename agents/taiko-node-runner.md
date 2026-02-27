@@ -6,7 +6,7 @@ description: >
   "node operator", "simple-taiko-node", "taiko-geth", "taiko-client",
   "sync node", "P2P", "preconfirmations". Use proactively for node operations.
 tools: Read, Write, Edit, Bash, Glob, Grep
-color: "#E81899"
+color: "#1E88E5"
 memory: project
 skills:
   - taiko-node:taiko-node
