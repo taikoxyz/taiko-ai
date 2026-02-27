@@ -37,12 +37,13 @@ See [networks reference](../skills/taiko/references/networks.md) for RPCs and ex
 ## Workflow
 
 ```bash
-# 0. Start server and confirm ready
+# 0. Start server and confirm ready (note the port from output)
 curl -fsSL https://raw.githubusercontent.com/taikoxyz/shadow/main/start.sh | sh
-curl -s http://localhost:3000/api/health
+export SHADOW_PORT=3000   # ← replace with actual port from start.sh output
+curl -s http://localhost:$SHADOW_PORT/api/health
 
 # 1. Create deposit
-curl -s -X POST http://localhost:3000/api/deposits \
+curl -s -X POST http://localhost:$SHADOW_PORT/api/deposits \
   -H 'Content-Type: application/json' \
   -d '{"chainId":"167013","notes":[{"recipient":"0xRECIPIENT","amount":"1000000000000000000"}]}'
 # → save id and targetAddress from response
@@ -52,10 +53,10 @@ cast send <targetAddress> --value <amountWei> \
   --rpc-url https://rpc.hoodi.ethpandaops.io --private-key $FUNDER_KEY
 
 # 3. Prove (poll until status == "proved")
-curl -s -X POST http://localhost:3000/api/deposits/<id>/prove
+curl -s -X POST http://localhost:$SHADOW_PORT/api/deposits/<id>/prove
 
 # 4. Claim on L2
-curl -s http://localhost:3000/api/deposits/<id>/notes/0/claim-tx
+curl -s http://localhost:$SHADOW_PORT/api/deposits/<id>/notes/0/claim-tx
 # → cast send <to> <data> --rpc-url https://rpc.hoodi.taiko.xyz --private-key $CLAIMER_KEY
 ```
 

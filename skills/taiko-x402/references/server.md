@@ -163,10 +163,10 @@ interface RouteConfig {
 
 ```bash
 # Should return 402 with PAYMENT-REQUIRED header
-curl -v http://localhost:3000/api/data
-
-# Inspect payment requirements
-curl -s http://localhost:3000/api/data | head -5
+curl -sI http://localhost:3000/api/data | head -5
 # → HTTP/1.1 402 Payment Required
 # → PAYMENT-REQUIRED: base64(...)
+
+# Verbose output (full request/response)
+curl -v http://localhost:3000/api/data
 ```

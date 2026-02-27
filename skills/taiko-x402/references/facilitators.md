@@ -53,16 +53,17 @@ const server = new x402ResourceServer(facilitatorClient)
 ```go
 import (
     x402http "github.com/coinbase/x402/go/http"
-    evm "github.com/coinbase/x402/go/mechanisms/evm/exact/server"
+    ginmw "github.com/coinbase/x402/go/http/gin"
+    evmserver "github.com/coinbase/x402/go/mechanisms/evm/exact/server"
 )
 
-facilitatorClient := x402http.NewHTTPFacilitatorClient(&x402http.FacilitatorConfig{
+facilitator := x402http.NewHTTPFacilitatorClient(&x402http.FacilitatorConfig{
     URL: "https://facilitator.taiko.xyz",
 })
-// Register both networks
+
 schemes := []ginmw.SchemeConfig{
-    {Network: "eip155:167000", Server: evm.NewExactEvmScheme()},
-    {Network: "eip155:167013", Server: evm.NewExactEvmScheme()},
+    {Network: "eip155:167000", Server: evmserver.NewExactEvmScheme()},
+    {Network: "eip155:167013", Server: evmserver.NewExactEvmScheme()},
 }
 ```
 

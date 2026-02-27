@@ -47,7 +47,7 @@ const data = await response.json();
 ## TypeScript — Axios
 
 ```typescript
-import { x402Client, withPaymentInterceptor } from "@x402/axios";
+import { wrapAxiosWithPayment, x402Client } from "@x402/axios";
 import { registerExactEvmScheme } from "@x402/evm/exact/client";
 import { privateKeyToAccount } from "viem/accounts";
 import axios from "axios";
@@ -57,7 +57,7 @@ const signer = privateKeyToAccount(process.env.EVM_PRIVATE_KEY as `0x${string}`)
 const client = new x402Client();
 registerExactEvmScheme(client, { signer });
 
-const api = withPaymentInterceptor(
+const api = wrapAxiosWithPayment(
   axios.create({ baseURL: "https://your-api.example.com" }),
   client,
 );
@@ -71,19 +71,23 @@ console.log(response.data);
 ```go
 import (
     "net/http"
+    "os"
+
     x402 "github.com/coinbase/x402/go"
-    evm "github.com/coinbase/x402/go/mechanisms/evm/exact/client"
+    x402http "github.com/coinbase/x402/go/http"
+    evmclient "github.com/coinbase/x402/go/mechanisms/evm/exact/client"
+    evmsigner "github.com/coinbase/x402/go/signers/evm"
 )
 
-client := x402.NewX402Client()
-evm.RegisterExactEvmScheme(client, &evm.Config{
-    PrivateKey: os.Getenv("EVM_PRIVATE_KEY"),
-})
+signer, err := evmsigner.NewClientSignerFromPrivateKey(os.Getenv("EVM_PRIVATE_KEY"))
 
-httpClient := x402.WrapHTTPClient(client)
+client := x402.Newx402Client()
+client.Register("eip155:*", evmclient.NewExactEvmScheme(signer))
 
-req, _ := http.NewRequest("GET", "https://your-api.example.com/api/data", nil)
-resp, err := httpClient.Do(req)
+httpX402 := x402http.Newx402HTTPClient(client)
+httpClient := x402http.WrapHTTPClientWithPayment(http.DefaultClient, httpX402)
+
+resp, err := httpClient.Get("https://your-api.example.com/api/data")
 ```
 
 ## Python (async with httpx)

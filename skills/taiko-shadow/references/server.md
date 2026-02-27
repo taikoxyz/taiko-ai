@@ -10,7 +10,13 @@ curl -fsSL https://raw.githubusercontent.com/taikoxyz/shadow/main/start.sh | sh
 ./start.sh
 ```
 
-Server is ready when `GET http://localhost:3000/api/health` returns `200`.
+The script prints the selected port on startup (e.g. `Listening on port 3000`). Export it for the steps below:
+
+```bash
+export SHADOW_PORT=3000   # ← replace with actual port from start.sh output
+```
+
+Server is ready when `GET http://localhost:$SHADOW_PORT/api/health` returns `200`.
 
 **Minimum Docker resources:** 4 CPUs, 8 GB RAM, 10 GB disk.
 
@@ -43,7 +49,7 @@ Prove a deposit file without starting the full server — useful for scripted pi
 ## Stage 1: Create deposit
 
 ```bash
-curl -s -X POST http://localhost:3000/api/deposits \
+curl -s -X POST http://localhost:$SHADOW_PORT/api/deposits \
   -H 'Content-Type: application/json' \
   -d '{
     "chainId": "167013",
@@ -80,10 +86,10 @@ Requires **Docker running**. Proof generation is async.
 
 ```bash
 # Start proving; add ?force=true to overwrite an existing proof
-curl -s -X POST http://localhost:3000/api/deposits/{id}/prove
+curl -s -X POST http://localhost:$SHADOW_PORT/api/deposits/{id}/prove
 
 # Poll until all notes are proved
-until curl -s http://localhost:3000/api/deposits/{id} \
+until curl -s http://localhost:$SHADOW_PORT/api/deposits/{id} \
   | jq -e '[.notes[].status] | all(. == "proved")' > /dev/null; do
   sleep 30
 done
@@ -93,7 +99,7 @@ done
 
 ```bash
 # Get claim calldata for note index 0
-CLAIM=$(curl -s http://localhost:3000/api/deposits/{id}/notes/0/claim-tx)
+CLAIM=$(curl -s http://localhost:$SHADOW_PORT/api/deposits/{id}/notes/0/claim-tx)
 # Returns: { "to": "0x...", "data": "0x...", "chainId": "0x..." }
 
 # Submit claim on Taiko L2 (claimer pays gas; ETH mints to the note's recipient)
