@@ -1,7 +1,7 @@
 # @taikoxyz/taiko-api-client — Shared Library Plan
 
 ## Status
-[ ] Not started
+[x] Implemented — `packages/taiko-api-client/` built and tested. Etherscan V2 API used (`api.etherscan.io/v2/api?chainid=`). Relayer URL TBD (relayer.taiko.xyz doesn't resolve — see open questions).
 
 ## Summary
 

@@ -1,0 +1,24 @@
+name = "taiko-data-mcp"
+main = "dist/index.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+DEFAULT_NETWORK = "mainnet"
+
+# Set secrets via: wrangler secret put TAIKOSCAN_API_KEY
+# TAIKOSCAN_API_KEY is required for Taikoscan tools
+
+# To deploy:
+#   npm run build
+#   wrangler secret put TAIKOSCAN_API_KEY
+#   wrangler deploy
+#
+# Once deployed, configure in Claude Desktop:
+#   {
+#     "mcpServers": {
+#       "taiko-data": {
+#         "url": "https://taiko-data-mcp.<account>.workers.dev/mcp"
+#       }
+#     }
+#   }

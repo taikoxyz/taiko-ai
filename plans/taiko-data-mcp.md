@@ -1,11 +1,18 @@
 # taiko-data MCP — Implementation Plan
 
 ## Status
-[ ] Not started
+[x] Implemented — `mcp-servers/taiko-data/` built, 12 tools, tests passing. Pending: Taikoscan API key + CF Workers deploy.
+
+**Implementation notes (deviations from plan):**
+- Built from scratch (TypeScript MCP SDK + ethers.js v6) rather than forking mcp-ethers-server — cleaner, CF-Workers-friendly
+- **Taikoscan V1 API is deprecated** — now using Etherscan V2: `https://api.etherscan.io/v2/api?chainid=167000`
+- `relayer.taiko.xyz` does not resolve from current environment — `get_bridge_message_status` falls back to on-chain `IBridge.messageStatus()`
+- Relayer routes confirmed from source: `GET /events`, `GET /blockInfo`, `GET /recommendedProcessingFees` (no `/events/{msgHash}` endpoint exists)
+- `getCheckpoint` ABI on TaikoAnchor may differ from current deployment — `get_l1_checkpoint` falls back to `taiko_headL1Origin`
 
 ## Summary
 
-`taiko-data` provides AI agents with complete read-only access to Taiko on-chain data via Taikoscan and Blockscout APIs. It is forked from `crazyrabbitLTC/mcp-ethers-server` (MIT, TypeScript, 40+ tools), with the RPC/Etherscan URLs swapped to Taiko's endpoints and 5 Taiko-specific tools added. It supports both Taiko Mainnet (167000) and Hoodi testnet (167013). Deployment target is **Cloudflare Workers** (free tier, 100k req/day) for zero-ops stateless hosting, with a local stdio fallback via `npx @taikoxyz/mcp-data`.
+`taiko-data` provides AI agents with complete read-only access to Taiko on-chain data via Taikoscan and Blockscout APIs. Built from scratch with TypeScript MCP SDK (not a fork of mcp-ethers-server), with Etherscan V2 API and 5 Taiko-specific tools added. It supports both Taiko Mainnet (167000) and Hoodi testnet (167013). Deployment target is **Cloudflare Workers** (free tier, 100k req/day) for zero-ops stateless hosting, with a local stdio fallback via `npx @taikoxyz/mcp-data`.
 
 This is the highest-priority MCP — read-only, zero key management, broadest developer demand.
 
