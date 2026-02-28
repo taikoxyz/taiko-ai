@@ -1,7 +1,15 @@
 # taiko-bridge MCP — Implementation Plan
 
 ## Status
-[ ] Not started
+[x] Implemented — 18/18 tests pass
+
+### Key implementation notes
+- ABI JSON artifacts not available pre-built; defined inline as TypeScript `as const` arrays from Solidity source
+- `privateKeyToAccount` imports from `viem/accounts`, not `viem`
+- `RelayerEvent.data.Message` (capitalized) is the message struct; `event.message` does not exist
+- `RelayerClient.getEvents(address, network, page, size)` — positional args
+- Tool registration uses `server.tool(name, description, zodSchema, handler)` (not `registerTool`)
+- npm workspace hoists vitest to root; test script uses `../../node_modules/.bin/vitest`
 
 ## Summary
 

@@ -13,7 +13,7 @@ This document tracks all planned MCPs and CLI tooling for the `taikoxyz/taiko-ai
 | 0 | Shared API Client | Pre-req | Library | npm package | [x] Built — `packages/taiko-api-client/` | [plans/shared-library.md](plans/shared-library.md) |
 | 1 | taiko-data MCP | Phase 1 | MCP | Cloudflare Workers | [x] Built — `mcp-servers/taiko-data/`, needs API key + deploy | [plans/taiko-data-mcp.md](plans/taiko-data-mcp.md) |
 | 2 | taiko-node-monitor MCP | Phase 1 | MCP | Local stdio | [x] Built — `mcp-servers/taiko-node-monitor/`, distribute via `uvx taiko-node-monitor` | [plans/taiko-node-monitor-mcp.md](plans/taiko-node-monitor-mcp.md) |
-| 3 | taiko-bridge MCP | Phase 2 | MCP | Local stdio (write) / CF Workers (read) | [ ] Not started | [plans/taiko-bridge-mcp.md](plans/taiko-bridge-mcp.md) |
+| 3 | taiko-bridge MCP | Phase 2 | MCP | Local stdio (write) / CF Workers (read) | [x] Built — `mcp-servers/taiko-bridge/`, 9 tools (5 read + 4 write), 18/18 tests pass | [plans/taiko-bridge-mcp.md](plans/taiko-bridge-mcp.md) |
 | 4 | taiko-explorer MCP | Phase 2 | MCP | CF Workers (6 tools) / Railway (analyze) | [ ] Not started | [plans/taiko-explorer-mcp.md](plans/taiko-explorer-mcp.md) |
 | 5 | taiko CLI | Phase 3 | CLI | Local binary / npm | [ ] Not started | [plans/taiko-cli.md](plans/taiko-cli.md) |
 
