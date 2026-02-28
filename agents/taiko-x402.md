@@ -55,13 +55,14 @@ curl -v http://localhost:3000/protected-endpoint
 - [ ] USDC contract address verified on Taikoscan before use
 - [ ] Seller tested on Hoodi before deploying to Mainnet
 - [ ] `payTo` address confirmed correct (payments go directly; no reversal possible)
-- [ ] Price set in USDC dollars string (`"$0.001"`) not raw amounts to avoid unit errors
+- [ ] For Taiko networks, set `price` as `{ amount, asset }` using verified USDC address to avoid default-asset issues
 
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
 | `No scheme registered for network` | Register EVM scheme for `eip155:167000` / `eip155:167013` |
+| `No default asset configured for network` | Use `price: { amount, asset }` and set `asset` to the network USDC contract |
 | `Payment already attempted` | Facilitator rejected — check USDC balance and allowance |
 | `Invalid signature` | Signer address doesn't match `from` in EIP-712 payload |
 | 402 on every request (not recovering) | Client not configured — wrap fetch/axios with x402 client |

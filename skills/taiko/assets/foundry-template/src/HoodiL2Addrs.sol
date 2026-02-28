@@ -34,6 +34,6 @@ library HoodiL2Addrs {
 
     // ============ Utility ============
 
-    address internal constant MULTICALL3 = 0xca11bde05977b3631167028862be2a173976ca11;
+    address internal constant MULTICALL3 = 0xcA11bde05977b3631167028862bE2a173976CA11;
     address internal constant SAFE_SINGLETON_FACTORY = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
 }

@@ -42,7 +42,12 @@ async def get_node_health_data(l2_rpc: str, l1_rpc: str) -> dict:
     try:
         l1_origin = await rpc_call(l2_rpc, "taiko_headL1Origin")
         raw = l1_origin.get("l1BlockHeight")
-        l1_block_height = int(raw, 16) if raw else None
+        if isinstance(raw, int):
+            l1_block_height = raw
+        elif isinstance(raw, str):
+            l1_block_height = int(raw, 16) if raw.startswith("0x") else int(raw)
+        else:
+            l1_block_height = None
     except Exception:
         pass
 

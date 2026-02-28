@@ -7,6 +7,8 @@ description: Use when performing private or anonymous ETH transfers on Taiko. Co
 
 Shadow is a privacy-preserving ETH claim system on Taiko L2. An agent deposits ETH to a deterministically-derived "target address" on L1 Ethereum, then claims on Taiko L2 using a ZK proof — without linking depositor and recipient.
 
+> **Network Selection:** If the user has not specified "hoodi" or "mainnet", always ask which network to use before proceeding.
+
 ## Lifecycle
 
 ```

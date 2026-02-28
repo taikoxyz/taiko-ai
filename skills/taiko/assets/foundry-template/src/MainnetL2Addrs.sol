@@ -42,6 +42,6 @@ library MainnetL2Addrs {
 
     // ============ Utility ============
 
-    address internal constant MULTICALL3 = 0xca11bde05977b3631167028862be2a173976ca11;
+    address internal constant MULTICALL3 = 0xcA11bde05977b3631167028862bE2a173976CA11;
     address internal constant SAFE_SINGLETON_FACTORY = 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7;
 }
