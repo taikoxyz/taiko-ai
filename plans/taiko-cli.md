@@ -1,7 +1,7 @@
 # taiko CLI — Implementation Plan
 
 ## Status
-[ ] Not started
+[x] Built — `cli/` directory, 4 command groups, 24/24 tests pass
 
 ## Summary
 

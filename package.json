@@ -4,6 +4,7 @@
   "private": true,
   "workspaces": [
     "mcp-servers/*",
-    "packages/*"
+    "packages/*",
+    "cli"
   ]
 }
