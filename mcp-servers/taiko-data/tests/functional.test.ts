@@ -117,6 +117,24 @@ describe("Taikoscan tools (Etherscan V2 API key required)", () => {
   );
 });
 
+describe("Relayer API (relayer.mainnet.taiko.xyz)", () => {
+  it("blockInfo returns L1 and L2 chain data", async () => {
+    const relayer = new RelayerClient();
+    const info = await relayer.getBlockInfo("mainnet");
+    expect(info.data).toBeDefined();
+    const l2Entry = info.data.find((d) => d.chainID === 167000);
+    expect(l2Entry).toBeDefined();
+    expect(l2Entry!.latestBlock).toBeGreaterThan(4_000_000);
+  }, 15_000);
+
+  it("getEvents returns response for any address", async () => {
+    const relayer = new RelayerClient();
+    const response = await relayer.getEvents(GOLDEN_TOUCH, "mainnet");
+    expect(response).toHaveProperty("total");
+    expect(response).toHaveProperty("items");
+  }, 15_000);
+});
+
 describe("Bridge message status (on-chain fallback)", () => {
   it("IBridge.messageStatus returns numeric status for valid hash", async () => {
     const provider = getProvider("mainnet");

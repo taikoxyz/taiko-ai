@@ -5,7 +5,7 @@ export const NETWORKS = {
     // Etherscan V2 API — all chains now use api.etherscan.io/v2/api?chainid=
     etherscanV2: "https://api.etherscan.io/v2/api",
     blockscout: "https://blockscoutapi.mainnet.taiko.xyz/api/v2",
-    relayer: "https://relayer.taiko.xyz",
+    relayer: "https://relayer.mainnet.taiko.xyz",
     bridge: "0x1670000000000000000000000000000000000001",
     signalService: "0x1670000000000000000000000000000000000005",
     anchor: "0x1670000000000000000000000000000000010001",

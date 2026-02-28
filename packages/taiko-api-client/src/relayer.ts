@@ -46,12 +46,14 @@ export interface RelayerEventsResponse {
   end: boolean;
 }
 
+export interface RelayerBlockInfoEntry {
+  chainID: number;
+  latestProcessedBlock: number;
+  latestBlock: number;
+}
+
 export interface RelayerBlockInfo {
-  latestProcessedBlock: {
-    srcChainId: number;
-    destChainId: number;
-    latestProcessedBlock: number;
-  };
+  data: RelayerBlockInfoEntry[];
 }
 
 export const MESSAGE_STATUS = ["NEW", "RETRIABLE", "DONE", "FAILED", "RECALLED"] as const;
@@ -91,8 +93,15 @@ export class RelayerClient {
   }
 
   async getEventByMsgHash(msgHash: string, network: Network = "mainnet"): Promise<RelayerEvent | null> {
+    // The relayer has no /events/{msgHash} endpoint (routes: GET /events, /blockInfo, /recommendedProcessingFees)
+    // Filter by msgHash from the events list — not efficient for unknown addresses, returns null if not found
     try {
-      return await this.fetch<RelayerEvent>(network, `/events/${msgHash}`);
+      const response = await this.fetch<RelayerEventsResponse>(network, "/events", {
+        msgHash,
+        page: "1",
+        size: "5",
+      });
+      return response.items[0] ?? null;
     } catch {
       return null;
     }
