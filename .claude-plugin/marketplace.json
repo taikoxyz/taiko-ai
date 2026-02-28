@@ -35,6 +35,32 @@
         "repo": "taikoxyz/taiko-ai"
       },
       "category": "infrastructure"
+    },
+    {
+      "name": "taiko-shadow",
+      "description": "Privacy-preserving ETH transfer specialist for Taiko using ZK proofs to unlink sender from recipient",
+      "version": "1.5.0",
+      "author": {
+        "name": "Taiko Labs"
+      },
+      "source": {
+        "source": "github",
+        "repo": "taikoxyz/taiko-ai"
+      },
+      "category": "privacy"
+    },
+    {
+      "name": "taiko-x402",
+      "description": "x402 HTTP payment integration specialist for Taiko — build payment-protected APIs and AI agent clients using USDC facilitators",
+      "version": "1.5.0",
+      "author": {
+        "name": "Taiko Labs"
+      },
+      "source": {
+        "source": "github",
+        "repo": "taikoxyz/taiko-ai"
+      },
+      "category": "payments"
     }
   ]
 }

@@ -130,7 +130,6 @@ Taiko runs live x402 facilitators for HTTP-native USDC payments on Mainnet and H
 | Issue | Solution |
 |-------|----------|
 | "Invalid EVM version" | Use `FOUNDRY_PROFILE=layer2` |
-| Build fails with PUSH0 | Ensure using Shanghai EVM |
 | "Contract not verified" | Check API endpoint URL and key |
 | "Insufficient funds" | Bridge ETH from L1 |
 | "Transaction reverted" | Use `cast run <TX_HASH>` to debug |
@@ -138,6 +137,25 @@ Taiko runs live x402 facilitators for HTTP-native USDC payments on Mainnet and H
 ## Examples
 
 See `examples/` for Python (signal verification, block hash) and Solidity (bridge receiver, cross-chain counter).
+
+## CLI Quick Reference
+
+Use `taiko --json` for structured output parseable by agents:
+
+```bash
+taiko network status --json                              # verify network reachability before any operation
+taiko network info --json                                # chain ID, contract addresses, gas price
+taiko contract verify <ADDR> <id> --network hoodi        # preferred verify method (wraps forge with Taiko config)
+taiko bridge status <TX_HASH> --json                     # check bridge relay status
+```
+
+All commands return: `{ schema_version, command, status, network, data, errors, warnings, metrics }`
+
+## Related Skills
+
+- **Node setup & L1 requirements:** [taiko-node skill](../taiko-node/SKILL.md)
+- **x402 HTTP payments:** [taiko-x402 skill](../taiko-x402/SKILL.md)
+- **Private ETH transfers:** [taiko-shadow skill](../taiko-shadow/SKILL.md)
 
 ## Resources
 
