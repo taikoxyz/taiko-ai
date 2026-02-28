@@ -54,6 +54,33 @@ No CDP API key required — Taiko facilitators are independent of Coinbase's CDP
 | 402 on every request | Middleware misconfigured — check route pattern and `payTo` address |
 | `No default asset configured for network` | Use `price` as `{ amount, asset }` with the verified USDC token address for that Taiko network |
 
+## Network Contract Addresses
+
+USDC addresses and chain IDs are maintained in the taiko skill:
+- **[taiko/references/networks.md](../taiko/references/networks.md)** — USDC contract addresses per network, chain IDs for CAIP-2 identifiers
+
+Use `taiko network info --json` to retrieve current contract addresses programmatically:
+```bash
+taiko network info --json --network hoodi    # chain ID, USDC address, explorer URLs
+taiko network info --json --network mainnet
+```
+
+## MCP Tools for Verification
+
+| Task | Tool |
+|------|------|
+| Verify USDC contract | `get_contract_abi` — confirm it's the USDC contract before integration |
+| Check buyer USDC balance | `read_contract` — call `balanceOf(address)` on USDC |
+| Debug payment failure | `decode_calldata` — decode payment tx input |
+| Verify payment on-chain | `get_transaction_info` — confirm 402 payment tx hash |
+| Look up facilitator address | `search` — find by name on the target network |
+| Fee guidance | `get_gas_price` — help users estimate appropriate payment amounts |
+
+## Related Skills
+
+- **Contract addresses & chain IDs:** [taiko skill](../taiko/SKILL.md)
+- **Foundry & contract deployment:** [taiko/references/foundry-guide.md](../taiko/references/foundry-guide.md)
+
 ## References
 
 - [Server setup](./references/server.md) — Express/Next.js/Hono middleware, route config, Bazaar discovery

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ethers } from "ethers";
 import { z } from "zod";
-import { TaikoscanClient, summarizeAbi, truncateHex, compactTransaction } from "@taikoxyz/taiko-api-client";
+import { TaikoscanClient, truncateHex, compactTransaction } from "@taikoxyz/taiko-api-client";
 import { getProvider } from "../lib/rpc.js";
 
 const networkParam = z
@@ -130,35 +130,6 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
               gasUsed: receipt?.gasUsed?.toString(),
               input: truncateHex(tx.data ?? "0x"),
             }),
-          },
-        ],
-      };
-    }
-  );
-
-  // get_contract_abi
-  server.tool(
-    "get_contract_abi",
-    "Fetch the verified ABI for a contract on Taiko from Taikoscan",
-    {
-      address: z.string().describe("Contract address"),
-      raw: z.boolean().default(false).describe("Return full ABI JSON instead of summarized signatures"),
-      network: networkParam,
-    },
-    async ({ address, raw, network }) => {
-      const abiStr = await taikoscan.getContractABI(address, network);
-      let abi: unknown;
-      try {
-        abi = JSON.parse(abiStr);
-      } catch {
-        abi = abiStr;
-      }
-      const result = !raw && Array.isArray(abi) ? summarizeAbi(abi) : abi;
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({ address, network, abi: result }),
           },
         ],
       };

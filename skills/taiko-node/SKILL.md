@@ -37,6 +37,24 @@ docker compose -f docker-compose-hoodi.yml up -d  # testnet
 
 **L1 endpoints:** Use `host.docker.internal` or machine's private IP, not `127.0.0.1`.
 
+## CLI Quick Reference
+
+Use `taiko --json` for structured output:
+
+```bash
+taiko node status --json                                      # health: block, peers, sync %, L1 anchor
+taiko node logs --service taiko_client_driver --tail 50       # taiko-client logs
+taiko node logs --service l2_execution_engine --tail 50       # taiko-geth logs
+taiko node restart --json                                     # restart with structured confirmation
+```
+
+All commands return: `{ schema_version, command, status, network, data, errors, warnings, metrics }`
+
+## Related Skills
+
+- **L2 contract addresses & RPCs:** [taiko/references/networks.md](../taiko/references/networks.md)
+- **Smart contract development:** [taiko skill](../taiko/SKILL.md)
+
 ## Resources
 
 - **Docs**: https://docs.taiko.xyz/guides/node-operators/
