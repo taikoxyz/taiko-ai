@@ -157,6 +157,18 @@ export function registerAnalyzeTools(server: McpServer): void {
           description: d.description,
         }));
 
+        // Sort by impact priority and cap for token efficiency
+        const IMPACT_ORDER: Record<string, number> = { High: 0, Medium: 1, Low: 2, Informational: 3 };
+        const sorted = findings.sort(
+          (a, b) => (IMPACT_ORDER[a.impact] ?? 4) - (IMPACT_ORDER[b.impact] ?? 4)
+        );
+        const MAX_FINDINGS = 20;
+        const capped = sorted.slice(0, MAX_FINDINGS);
+        const cappedFindings = capped.map((f) => ({
+          ...f,
+          description: f.description.length > 500 ? f.description.slice(0, 500) + "..." : f.description,
+        }));
+
         const highImpact = findings.filter((f) => f.impact === "High");
         const mediumImpact = findings.filter((f) => f.impact === "Medium");
 
@@ -176,7 +188,8 @@ export function registerAnalyzeTools(server: McpServer): void {
                   low: findings.filter((f) => f.impact === "Low").length,
                   informational: findings.filter((f) => f.impact === "Informational").length,
                 },
-                findings,
+                findingsTruncated: findings.length > MAX_FINDINGS,
+                findings: cappedFindings,
               }),
             },
           ],

@@ -39,7 +39,7 @@ export function registerCompatTools(server: McpServer): void {
       "Blocked opcodes: TLOAD (0x5C), TSTORE (0x5D), MCOPY (0x5E), BLOBHASH (0x49), BLOBBASEFEE (0x4A). " +
       "Note: PUSH0 (0x5F) IS available — Shanghai added it. " +
       "Set TAIKO_EVM_VERSION=cancun|pectra to evaluate against newer fork rules. " +
-      "This is the only tool of its kind for any L2 blockchain.",
+      "Checks deployed bytecode against the configured EVM version's blocked opcode list.",
     {
       address: z.string().describe("Contract address to check (0x-prefixed)"),
       network: networkParam,

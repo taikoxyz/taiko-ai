@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ethers } from "ethers";
 import { z } from "zod";
-import { TaikoscanClient } from "@taikoxyz/taiko-api-client";
+import { TaikoscanClient, summarizeAbi, truncateHex, compactTransaction } from "@taikoxyz/taiko-api-client";
 import { getProvider } from "../lib/rpc.js";
 
 const networkParam = z
@@ -40,7 +40,7 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       address: z.string().describe("Ethereum address"),
       network: networkParam,
       page: z.number().int().min(1).default(1).describe("Page number"),
-      limit: z.number().int().min(1).max(100).default(25).describe("Transactions per page"),
+      limit: z.number().int().min(1).max(100).default(10).describe("Transactions per page"),
     },
     async ({ address, network, page, limit }) => {
       const txs = await taikoscan.getTransactions(address, network, page, limit);
@@ -48,7 +48,7 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
         content: [
           {
             type: "text",
-            text: JSON.stringify({ address, network, page, count: txs.length, transactions: txs }),
+            text: JSON.stringify({ address, network, page, count: txs.length, transactions: txs.map((tx) => compactTransaction(tx as unknown as Record<string, unknown>)) }),
           },
         ],
       };
@@ -122,7 +122,7 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
               blockNumber: tx.blockNumber,
               status: receipt?.status === 1 ? "success" : receipt?.status === 0 ? "reverted" : "pending",
               gasUsed: receipt?.gasUsed?.toString(),
-              input: tx.data,
+              input: truncateHex(tx.data ?? "0x"),
             }),
           },
         ],
@@ -136,9 +136,10 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
     "Fetch the verified ABI for a contract on Taiko from Taikoscan",
     {
       address: z.string().describe("Contract address"),
+      raw: z.boolean().default(false).describe("Return full ABI JSON instead of summarized signatures"),
       network: networkParam,
     },
-    async ({ address, network }) => {
+    async ({ address, raw, network }) => {
       const abiStr = await taikoscan.getContractABI(address, network);
       let abi: unknown;
       try {
@@ -146,11 +147,12 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       } catch {
         abi = abiStr;
       }
+      const result = !raw && Array.isArray(abi) ? summarizeAbi(abi) : abi;
       return {
         content: [
           {
             type: "text",
-            text: JSON.stringify({ address, network, abi }),
+            text: JSON.stringify({ address, network, abi: result }),
           },
         ],
       };
@@ -198,15 +200,17 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
     {
       address: z.string().describe("Ethereum address"),
       token: z.string().optional().describe("Filter by specific ERC-20 token contract address (optional)"),
+      page: z.number().int().min(1).default(1).describe("Page number"),
+      limit: z.number().int().min(1).max(100).default(10).describe("Transfers per page"),
       network: networkParam,
     },
-    async ({ address, token, network }) => {
-      const transfers = await taikoscan.getTokenTransfers(address, network, token);
+    async ({ address, token, page, limit, network }) => {
+      const transfers = await taikoscan.getTokenTransfers(address, network, token, page, limit);
       return {
         content: [
           {
             type: "text",
-            text: JSON.stringify({ address, network, count: transfers.length, transfers }),
+            text: JSON.stringify({ address, network, page, count: transfers.length, transfers: transfers.map((t) => compactTransaction(t as unknown as Record<string, unknown>)) }),
           },
         ],
       };
@@ -296,9 +300,10 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       event_signature: z.string().optional().describe("Event signature like 'Transfer(address,address,uint256)'"),
       from_block: z.number().int().nonnegative().optional().describe("Start block number"),
       to_block: z.number().int().nonnegative().optional().describe("End block number (default: latest)"),
+      limit: z.number().int().min(1).max(1000).default(100).describe("Maximum number of log entries to return"),
       network: networkParam,
     },
-    async ({ address, event_signature, from_block, to_block, network }) => {
+    async ({ address, event_signature, from_block, to_block, limit, network }) => {
       const provider = getProvider(network);
 
       // Cap block range to prevent RPC timeout / OOM (most providers cap at 2k-10k blocks)
@@ -327,11 +332,16 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
         filter.topics = [ethers.id(event_signature)];
       }
       const logs = await provider.getLogs(filter);
+      const capped = logs.slice(0, limit);
+      const result = capped.map((log) => ({
+        ...log,
+        data: typeof log.data === "string" ? truncateHex(log.data, 128) : log.data,
+      }));
       return {
         content: [
           {
             type: "text",
-            text: JSON.stringify({ address, network, count: logs.length, logs }),
+            text: JSON.stringify({ address, network, count: result.length, truncated: logs.length > limit, logs: result }),
           },
         ],
       };

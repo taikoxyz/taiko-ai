@@ -39,4 +39,4 @@ jobs:
           pip install -e "mcp-servers/taiko-node-monitor[dev]"
 
       - name: Test node-monitor (Python)
-        run: pytest -q mcp-servers/taiko-node-monitor/tests
+        run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q -p pytest_asyncio.plugin mcp-servers/taiko-node-monitor/tests

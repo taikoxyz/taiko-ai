@@ -68,7 +68,7 @@ export function contractCommand(program: Command): void {
           "--chain-id",
           String(netConfig.chainId),
           "--verifier-url",
-          `${netConfig.taikoscanExplorer}/api`,
+          `${netConfig.etherscanV2}?chainid=${netConfig.chainId}`,
         ];
 
         if (opts.compilerVersion) {

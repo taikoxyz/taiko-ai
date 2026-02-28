@@ -118,17 +118,28 @@ export function registerReadTools(server: McpServer): void {
       const relayer = new RelayerClient();
       const events = await relayer.getEvents(address, net, page, Math.min(size, 100));
       const pageInfo = normalizeRelayerPageInfo(events);
+      const items = (events.items ?? []).map((e) => ({
+        msgHash: e.msgHash,
+        status: e.status,
+        amount: e.amount,
+        destChainID: e.destChainID,
+        srcChainID: e.chainID,
+        createdAt: e.createdAt,
+      }));
       return {
         content: [
           {
             type: "text" as const,
             text: JSON.stringify({
-              ...events,
+              address,
+              network,
+              page,
+              items,
+              count: items.length,
               first: pageInfo.first,
               last: pageInfo.last,
               total_pages: pageInfo.totalPages,
               visible: pageInfo.visible,
-              end: undefined,
             }),
           },
         ],
@@ -143,14 +154,30 @@ export function registerReadTools(server: McpServer): void {
     {
       address: z.string().describe("Ethereum address (0x-prefixed)"),
       network: networkParam,
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .default(20)
+        .describe("Maximum pending messages to return"),
     },
-    async ({ address, network }) => {
+    async ({ address, network, limit }) => {
       const net = network as TaikoNetwork;
       const relayer = new RelayerClient();
-      const events = await relayer.getEvents(address, net, 1, 100);
+      const events = await relayer.getEvents(address, net, 1, Math.min(limit, 100));
 
-      // Filter to pending (NEW=0, RETRIABLE=1)
-      const pending = events.items?.filter((e) => e.status === 0 || e.status === 1) ?? [];
+      // Filter to pending (NEW=0, RETRIABLE=1) and summarize
+      const pending = (events.items?.filter((e) => e.status === 0 || e.status === 1) ?? [])
+        .slice(0, limit)
+        .map((e) => ({
+          msgHash: e.msgHash,
+          status: e.status === 0 ? "NEW" : "RETRIABLE",
+          amount: e.amount,
+          destChainID: e.destChainID,
+          srcChainID: e.chainID,
+          createdAt: e.createdAt,
+        }));
 
       return {
         content: [

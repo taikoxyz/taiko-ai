@@ -110,15 +110,17 @@ export class TaikoscanClient {
   async getTokenTransfers(
     address: string,
     network: Network = "mainnet",
-    contractAddress?: string
+    contractAddress?: string,
+    page = 1,
+    limit = 25
   ): Promise<Transaction[]> {
     const params: Record<string, string> = {
       module: "account",
       action: "tokentx",
       address,
       sort: "desc",
-      offset: "25",
-      page: "1",
+      offset: String(limit),
+      page: String(page),
     };
     if (contractAddress) params.contractaddress = contractAddress;
     const result = await this.fetch<Transaction[] | "">(network, params);
@@ -153,19 +155,17 @@ export class TaikoscanClient {
   async getNFTHoldings(
     address: string,
     network: Network = "mainnet",
-    type: "ERC-721" | "ERC-1155" | "all" = "all"
+    type: "ERC-721" | "ERC-1155" | "all" = "all",
+    page = 1,
+    limit = 50
   ): Promise<TokenBalance[]> {
     const params: Record<string, string> = {
       module: "account",
       action: "addresstokenbalance",
       address,
-      page: "1",
-      offset: "50",
+      page: String(page),
+      offset: String(limit),
     };
-    if (type !== "all") {
-      // Taikoscan: filter by token type
-      // Passing contracttype is supported on some Etherscan-compat endpoints
-    }
     const result = await this.fetch<TokenBalance[] | "">(network, params);
     if (!Array.isArray(result)) return [];
     if (type === "all") return result;

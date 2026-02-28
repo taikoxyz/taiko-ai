@@ -223,10 +223,12 @@ export function registerTaikoTools(
     {
       address: z.string().describe("Ethereum address to check NFT holdings for"),
       type: z.enum(["ERC-721", "ERC-1155", "all"]).default("all").describe("Token standard to filter by"),
+      page: z.number().int().min(1).default(1).describe("Page number"),
+      limit: z.number().int().min(1).max(100).default(20).describe("Results per page"),
       network: networkParam,
     },
-    async ({ address, type, network }) => {
-      const holdings = await taikoscan.getNFTHoldings(address, network, type);
+    async ({ address, type, page, limit, network }) => {
+      const holdings = await taikoscan.getNFTHoldings(address, network, type, page, limit);
       const nfts = holdings.filter((h) => h.tokenType === "ERC-721" || h.tokenType === "ERC-1155");
       return {
         content: [

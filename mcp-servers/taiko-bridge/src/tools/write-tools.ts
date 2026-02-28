@@ -266,7 +266,7 @@ export function registerWriteTools(server: McpServer): void {
     },
     async ({ msgHash, network, isLastAttempt, chain }) => {
       const net = network as TaikoNetwork;
-      const dir: BridgeDirection = chain === "l1" ? "L2_TO_L1" : "L1_TO_L2";
+      const dir: BridgeDirection = chain === "l1" ? "L1_TO_L2" : "L2_TO_L1";
 
       const rawMessage = await fetchMessageByHash(msgHash, net);
 

@@ -70,38 +70,6 @@ export function bridgeCommand(program: Command): void {
       }
     });
 
-  // ─── bridge deposit (stub — write ops require TAIKO_PRIVATE_KEY) ───────────
-  bridge
-    .command("deposit <amount>")
-    .description(
-      "Placeholder command. Direct CLI deposit is not implemented yet. " +
-        "Use the taiko-bridge MCP for bridge operations."
-    )
-    .option("--token <address>", "ERC-20 token address (default: ETH)")
-    .option("--to <address>", "Recipient address on L2 (default: your address)")
-    .option("--fee <wei>", "Relayer processing fee in wei (default: auto)")
-    .option("--json", "Output as JSON")
-    .option("--network <network>", "Override active network")
-    .action((amount: string, opts: { token?: string; to?: string; fee?: string; json?: boolean; network?: string }) => {
-      const mode: OutputMode = opts.json ? "json" : "human";
-      const config = readConfig();
-      const rawNet = opts.network;
-      if (rawNet !== undefined && rawNet !== "mainnet" && rawNet !== "hoodi") {
-        output(err("bridge deposit", rawNet, [`Unknown network: "${rawNet}". Use mainnet or hoodi.`]), mode);
-        process.exit(1);
-      }
-      const net = (rawNet as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
-
-      output(
-        err("bridge deposit", net, [
-          "This command is not implemented yet.",
-          "Use the taiko-bridge MCP server (`bridge_eth` / `bridge_erc20`) for production bridge transactions.",
-        ]),
-        mode
-      );
-      process.exit(1);
-    });
-
   // ─── bridge history ────────────────────────────────────────────────────────
   bridge
     .command("history <address>")

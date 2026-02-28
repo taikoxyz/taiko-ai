@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { TaikoscanClient } from "@taikoxyz/taiko-api-client";
+import { TaikoscanClient, summarizeAbi } from "@taikoxyz/taiko-api-client";
 import { type Network } from "@taikoxyz/taiko-api-client";
 
 const networkParam = z
@@ -65,8 +65,12 @@ export function registerAbiTools(server: McpServer): void {
     {
       address: z.string().describe("Contract address (0x-prefixed)"),
       network: networkParam,
+      raw: z
+        .boolean()
+        .default(false)
+        .describe("Return full ABI JSON instead of summarized signatures"),
     },
-    async ({ address, network }) => {
+    async ({ address, network, raw }) => {
       const taikoscan = new TaikoscanClient();
       const abiRaw = await taikoscan.getContractABI(address, network as Network);
 
@@ -81,7 +85,7 @@ export function registerAbiTools(server: McpServer): void {
         content: [
           {
             type: "text" as const,
-            text: JSON.stringify({ address, network, abi }),
+            text: JSON.stringify({ address, network, abi: raw ? abi : summarizeAbi(abi) }),
           },
         ],
       };
@@ -96,16 +100,32 @@ export function registerAbiTools(server: McpServer): void {
     {
       address: z.string().describe("Contract address (0x-prefixed)"),
       network: networkParam,
+      max_length: z
+        .number()
+        .int()
+        .min(100)
+        .default(8192)
+        .describe("Maximum characters of source code to return"),
     },
-    async ({ address, network }) => {
+    async ({ address, network, max_length }) => {
       const taikoscan = new TaikoscanClient();
       const source = await taikoscan.getContractSource(address, network as Network);
+
+      const sourceStr = JSON.stringify(source);
+      const truncated = sourceStr.length > max_length;
+      const trimmedSource = truncated ? sourceStr.slice(0, max_length) : sourceStr;
 
       return {
         content: [
           {
             type: "text" as const,
-            text: JSON.stringify({ address, network, source }),
+            text: JSON.stringify({
+              address,
+              network,
+              source: trimmedSource,
+              truncated,
+              totalLength: sourceStr.length,
+            }),
           },
         ],
       };

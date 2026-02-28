@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { BlockscoutClient } from "@taikoxyz/taiko-api-client";
+import { BlockscoutClient, summarizeAbi } from "@taikoxyz/taiko-api-client";
 import { type Network } from "@taikoxyz/taiko-api-client";
 
 const networkParam = z
@@ -114,7 +114,7 @@ export function registerMetricsTools(server: McpServer): void {
               compilerVersion: contract.compiler_version,
               isVerified: contract.is_verified,
               hasSource: contract.source_code !== null,
-              abi: contract.abi,
+              abi: summarizeAbi(contract.abi),
             }),
           },
         ],

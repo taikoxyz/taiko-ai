@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { keccak_256 } from "@noble/hashes/sha3";
-import { TaikoscanClient } from "@taikoxyz/taiko-api-client";
+import { TaikoscanClient, truncateHex } from "@taikoxyz/taiko-api-client";
 import { type Network } from "@taikoxyz/taiko-api-client";
 import { lookupSignature } from "../lib/signatures.js";
 
@@ -26,18 +26,21 @@ function decodeWithSignature(calldata: string, signature: string): Record<string
   const funcName = parenIdx >= 0 ? signature.slice(0, parenIdx) : signature;
   const rawArgs = calldata.slice(10); // remove 0x + 4-byte selector
 
-  // Slice args into 32-byte chunks for display
-  const chunks: string[] = [];
+  // Slice args into 32-byte chunks for display, capped for token efficiency
+  const MAX_ARG_CHUNKS = 8;
+  const allChunks: string[] = [];
   for (let i = 0; i < rawArgs.length; i += 64) {
-    chunks.push("0x" + rawArgs.slice(i, i + 64));
+    allChunks.push("0x" + rawArgs.slice(i, i + 64));
   }
+  const argChunks = allChunks.slice(0, MAX_ARG_CHUNKS);
 
   return {
     function: funcName,
     signature,
     selector: calldata.slice(0, 10),
-    rawArgs,
-    argChunks: chunks,
+    rawArgs: truncateHex("0x" + rawArgs, 512).slice(2), // truncate then remove "0x" prefix
+    argChunks,
+    ...(allChunks.length > MAX_ARG_CHUNKS ? { argChunksTotal: allChunks.length } : {}),
     note: "Argument values shown as raw 32-byte hex. Use a full ABI decoder for typed values.",
   };
 }
