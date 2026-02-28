@@ -5,9 +5,7 @@ import { readConfig, getActiveNetwork } from "../lib/config.js";
 import { output, ok, err, type OutputMode } from "../lib/output.js";
 
 export function bridgeCommand(program: Command): void {
-  const bridge = program
-    .command("bridge")
-    .description("Bridge ETH and tokens between L1 and Taiko L2");
+  const bridge = program.command("bridge").description("Bridge ETH and tokens between L1 and Taiko L2");
 
   // ─── bridge status ─────────────────────────────────────────────────────────
   bridge
@@ -18,7 +16,12 @@ export function bridgeCommand(program: Command): void {
     .action(async (txHash: string, opts: { json?: boolean; network?: string }) => {
       const mode: OutputMode = opts.json ? "json" : "human";
       const config = readConfig();
-      const net = (opts.network as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
+      const rawNet = opts.network;
+      if (rawNet !== undefined && rawNet !== "mainnet" && rawNet !== "hoodi") {
+        output(err("bridge status", rawNet, [`Unknown network: "${rawNet}". Use mainnet or hoodi.`]), mode);
+        process.exit(1);
+      }
+      const net = (rawNet as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
 
       try {
         const relayer = new RelayerClient();
@@ -56,16 +59,13 @@ export function bridgeCommand(program: Command): void {
                 : statusLabel === "DONE"
                   ? "Message successfully relayed and claimed."
                   : statusLabel === "FAILED"
-                    ? "Message failed. Use `taiko bridge claim` with --retry flag."
+                    ? "Message failed. Use the taiko-bridge MCP retry_message tool, or manually call IBridge.retryMessage on-chain."
                     : undefined,
           }),
           mode
         );
       } catch (e: unknown) {
-        output(
-          err("bridge status", net, [e instanceof Error ? e.message : String(e)]),
-          mode
-        );
+        output(err("bridge status", net, [e instanceof Error ? e.message : String(e)]), mode);
         process.exit(1);
       }
     });
@@ -85,7 +85,12 @@ export function bridgeCommand(program: Command): void {
     .action((amount: string, opts: { token?: string; to?: string; fee?: string; json?: boolean; network?: string }) => {
       const mode: OutputMode = opts.json ? "json" : "human";
       const config = readConfig();
-      const net = (opts.network as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
+      const rawNet = opts.network;
+      if (rawNet !== undefined && rawNet !== "mainnet" && rawNet !== "hoodi") {
+        output(err("bridge deposit", rawNet, [`Unknown network: "${rawNet}". Use mainnet or hoodi.`]), mode);
+        process.exit(1);
+      }
+      const net = (rawNet as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
 
       if (!process.env.TAIKO_PRIVATE_KEY) {
         output(
@@ -105,8 +110,7 @@ export function bridgeCommand(program: Command): void {
           token: opts.token ?? "ETH",
           to: opts.to ?? "(your address)",
           fee: opts.fee ?? "auto",
-          note:
-            "bridge deposit executes on-chain. Use `taiko-bridge` MCP for AI-assisted bridge operations with simulation and safety checks.",
+          note: "bridge deposit executes on-chain. Use `taiko-bridge` MCP for AI-assisted bridge operations with simulation and safety checks.",
           status: "not_implemented",
         }),
         mode
@@ -121,44 +125,44 @@ export function bridgeCommand(program: Command): void {
     .option("--network <network>", "Override active network")
     .option("--page <n>", "Page number (default: 1)")
     .option("--size <n>", "Results per page (default: 20)")
-    .action(
-      async (
-        address: string,
-        opts: { json?: boolean; network?: string; page?: string; size?: string }
-      ) => {
-        const mode: OutputMode = opts.json ? "json" : "human";
-        const config = readConfig();
-        const net = (opts.network as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
-        const page = parseInt(opts.page ?? "1", 10);
-        const size = Math.min(parseInt(opts.size ?? "20", 10), 100);
-
-        try {
-          const relayer = new RelayerClient();
-          const events = await relayer.getEvents(address, net as Network, page, size);
-
-          output(
-            ok("bridge history", net, {
-              address,
-              page,
-              size,
-              total: events.total,
-              end: events.end,
-              items: events.items.map((e) => ({
-                id: e.id,
-                status: ["NEW", "RETRIABLE", "DONE", "FAILED", "RECALLED"][e.status] ?? "UNKNOWN",
-                src_chain: e.chainID,
-                dest_chain: e.destChainID,
-                amount: e.amount,
-                token: e.canonicalTokenSymbol,
-                created_at: e.createdAt,
-              })),
-            }),
-            mode
-          );
-        } catch (e: unknown) {
-          output(err("bridge history", net, [e instanceof Error ? e.message : String(e)]), mode);
-          process.exit(1);
-        }
+    .action(async (address: string, opts: { json?: boolean; network?: string; page?: string; size?: string }) => {
+      const mode: OutputMode = opts.json ? "json" : "human";
+      const config = readConfig();
+      const rawNet = opts.network;
+      if (rawNet !== undefined && rawNet !== "mainnet" && rawNet !== "hoodi") {
+        output(err("bridge history", rawNet, [`Unknown network: "${rawNet}". Use mainnet or hoodi.`]), mode);
+        process.exit(1);
       }
-    );
+      const net = (rawNet as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
+      const page = parseInt(opts.page ?? "1", 10);
+      const size = Math.min(parseInt(opts.size ?? "20", 10), 100);
+
+      try {
+        const relayer = new RelayerClient();
+        const events = await relayer.getEvents(address, net as Network, page, size);
+
+        output(
+          ok("bridge history", net, {
+            address,
+            page,
+            size,
+            total: events.total,
+            end: events.end,
+            items: events.items.map((e) => ({
+              id: e.id,
+              status: ["NEW", "RETRIABLE", "DONE", "FAILED", "RECALLED"][e.status] ?? "UNKNOWN",
+              src_chain: e.chainID,
+              dest_chain: e.destChainID,
+              amount: e.amount,
+              token: e.canonicalTokenSymbol,
+              created_at: e.createdAt,
+            })),
+          }),
+          mode
+        );
+      } catch (e: unknown) {
+        output(err("bridge history", net, [e instanceof Error ? e.message : String(e)]), mode);
+        process.exit(1);
+      }
+    });
 }

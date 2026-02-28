@@ -54,6 +54,7 @@ export const BRIDGE_CONTRACTS = {
   mainnet: {
     // L1 Bridge on Ethereum mainnet (source: taikoxyz/taiko-mono mainnet-contract-logs-L1.md)
     l1Bridge: "0xd60247c6848B7Ca29eDdF63AA924E53dB6Ddd8EC" as `0x${string}`,
+    l1ERC20Vault: "0x996282cA11E5DEb6B5D122CC3B9A1FcAAD4415Ab" as `0x${string}`,
     // L2 contracts on Taiko mainnet
     l2Bridge: NETWORKS.mainnet.bridge,
     l2ERC20Vault: NETWORKS.mainnet.erc20Vault,
@@ -64,6 +65,7 @@ export const BRIDGE_CONTRACTS = {
   hoodi: {
     // L1 Bridge on Hoodi testnet (source: taikoxyz/taiko-mono taiko-hoodi-contract-logs.md)
     l1Bridge: "0x6a4cf607DaC2C4784B7D934Bcb3AD7F2ED18Ed80" as `0x${string}`,
+    l1ERC20Vault: "0x0857cd029937E7a119e492434c71CB9a9Bb59aB0" as `0x${string}`,
     l2Bridge: NETWORKS.hoodi.bridge,
     l2ERC20Vault: NETWORKS.hoodi.erc20Vault,
     l1Chain: hoodiTestnet,

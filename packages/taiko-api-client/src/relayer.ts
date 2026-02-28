@@ -43,7 +43,13 @@ export interface RelayerEventsResponse {
   page: number;
   size: number;
   total: number;
-  end: boolean;
+  /** @deprecated Live relayer API uses `last`/`first`/`total_pages`/`visible` instead. */
+  end?: boolean;
+  first?: boolean;
+  last?: boolean;
+  max_page?: number;
+  total_pages?: number;
+  visible?: number;
 }
 
 export interface RelayerBlockInfoEntry {
@@ -79,12 +85,7 @@ export class RelayerClient {
     return res.json() as Promise<T>;
   }
 
-  async getEvents(
-    address: string,
-    network: Network = "mainnet",
-    page = 1,
-    size = 25,
-  ): Promise<RelayerEventsResponse> {
+  async getEvents(address: string, network: Network = "mainnet", page = 1, size = 25): Promise<RelayerEventsResponse> {
     return this.fetch<RelayerEventsResponse>(network, "/events", {
       address,
       page: String(page),

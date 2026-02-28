@@ -3,18 +3,8 @@ import { parseEther, isAddress } from "viem";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { NETWORKS, RelayerClient, type RelayerEvent } from "@taikoxyz/taiko-api-client";
 import { IBridgeABI, IERC20VaultABI } from "../lib/abis.js";
-import {
-  BRIDGE_CONTRACTS,
-  DEFAULT_GAS_LIMITS,
-  type TaikoNetwork,
-  type BridgeDirection,
-} from "../networks.js";
-import {
-  makePublicClient,
-  makeWalletClient,
-  resolveBridgeAddress,
-  resolveChain,
-} from "../lib/clients.js";
+import { BRIDGE_CONTRACTS, DEFAULT_GAS_LIMITS, type TaikoNetwork, type BridgeDirection } from "../networks.js";
+import { makePublicClient, makeWalletClient, resolveBridgeAddress, resolveChain } from "../lib/clients.js";
 
 const networkParam = z
   .enum(["mainnet", "hoodi"])
@@ -41,6 +31,7 @@ async function getRecommendedEthFee(network: TaikoNetwork): Promise<bigint> {
     const ethFee = data.fees.find((f) => f.type === "eth");
     return ethFee ? BigInt(ethFee.amount) : 0n;
   } catch {
+    console.warn(`[taiko-bridge] Failed to fetch recommended ETH fee from relayer for ${network}, defaulting to 0`);
     return 0n;
   }
 }
@@ -57,13 +48,13 @@ async function fetchMessageByHash(msgHash: string, network: TaikoNetwork) {
   }
   const msg = event.data.Message;
   return {
-    id: Number(msg.id),
-    fee: Number(msg.fee),
-    gasLimit: Number(msg.gasLimit),
+    id: BigInt(msg.id),
+    fee: BigInt(msg.fee),
+    gasLimit: Number(msg.gasLimit), // uint32, safe as Number
     from: msg.from as `0x${string}`,
-    srcChainId: Number(msg.srcChainId),
+    srcChainId: BigInt(msg.srcChainId),
     srcOwner: msg.srcOwner as `0x${string}`,
-    destChainId: Number(msg.destChainId),
+    destChainId: BigInt(msg.destChainId),
     destOwner: msg.destOwner as `0x${string}`,
     to: msg.to as `0x${string}`,
     value: msg.value,
@@ -83,14 +74,8 @@ export function registerWriteTools(server: McpServer): void {
       amount: z.string().describe('ETH amount to bridge (e.g. "0.1")'),
       direction: z.enum(["L1_TO_L2", "L2_TO_L1"]).describe("Bridge direction"),
       network: networkParam,
-      to: z
-        .string()
-        .optional()
-        .describe("Recipient address on destination chain (default: your own address)"),
-      fee: z
-        .string()
-        .optional()
-        .describe("Relayer processing fee in wei (default: auto from relayer recommendation)"),
+      to: z.string().optional().describe("Recipient address on destination chain (default: your own address)"),
+      fee: z.string().optional().describe("Relayer processing fee in wei (default: auto from relayer recommendation)"),
     },
     async ({ amount, direction, network, to, fee }) => {
       const net = network as TaikoNetwork;
@@ -181,14 +166,8 @@ export function registerWriteTools(server: McpServer): void {
       amount: z.string().describe("Token amount in smallest unit (e.g. wei for 18-decimal tokens)"),
       direction: z.enum(["L1_TO_L2", "L2_TO_L1"]).describe("Bridge direction"),
       network: networkParam,
-      to: z
-        .string()
-        .optional()
-        .describe("Recipient address on destination chain (default: your own address)"),
-      fee: z
-        .string()
-        .optional()
-        .describe("Relayer processing fee in wei (default: auto from relayer recommendation)"),
+      to: z.string().optional().describe("Recipient address on destination chain (default: your own address)"),
+      fee: z.string().optional().describe("Relayer processing fee in wei (default: auto from relayer recommendation)"),
     },
     async ({ token, amount, direction, network, to, fee }) => {
       const net = network as TaikoNetwork;
@@ -206,7 +185,8 @@ export function registerWriteTools(server: McpServer): void {
 
       const { account, client: walletClient } = makeWalletClient(net, dir);
       const contracts = BRIDGE_CONTRACTS[net];
-      const vaultAddress = contracts.l2ERC20Vault;
+      // Select vault by direction: L1→L2 uses L1 vault, L2→L1 uses L2 vault
+      const vaultAddress = dir === "L1_TO_L2" ? contracts.l1ERC20Vault : contracts.l2ERC20Vault;
 
       const chain = resolveChain(net, dir);
       const publicClient = makePublicClient(chain);
@@ -268,15 +248,11 @@ export function registerWriteTools(server: McpServer): void {
       isLastAttempt: z
         .boolean()
         .default(false)
-        .describe(
-          "If true, marks this as the final retry — failed messages become FAILED permanently"
-        ),
+        .describe("If true, marks this as the final retry — failed messages become FAILED permanently"),
       chain: z
         .enum(["l1", "l2"])
         .default("l2")
-        .describe(
-          "Chain where the retry tx should be sent — l2 for L1→L2 messages, l1 for L2→L1"
-        ),
+        .describe("Chain where the retry tx should be sent — l2 for L1→L2 messages, l1 for L2→L1"),
     },
     async ({ msgHash, network, isLastAttempt, chain }) => {
       const net = network as TaikoNetwork;
@@ -341,13 +317,8 @@ export function registerWriteTools(server: McpServer): void {
       direction: z
         .enum(["L1_TO_L2", "L2_TO_L1"])
         .default("L1_TO_L2")
-        .describe(
-          "The original bridge direction — recall is called on the SOURCE chain"
-        ),
-      proof: z
-        .string()
-        .default("0x")
-        .describe("Proof bytes (hex, default: 0x — empty proof for most cases)"),
+        .describe("The original bridge direction — recall is called on the SOURCE chain"),
+      proof: z.string().default("0x").describe("Proof bytes (hex, default: 0x — empty proof for most cases)"),
     },
     async ({ msgHash, network, direction, proof }) => {
       const net = network as TaikoNetwork;

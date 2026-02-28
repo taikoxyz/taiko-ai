@@ -93,12 +93,7 @@ export class TaikoscanClient {
     });
   }
 
-  async getTransactions(
-    address: string,
-    network: Network = "mainnet",
-    page = 1,
-    limit = 25,
-  ): Promise<Transaction[]> {
+  async getTransactions(address: string, network: Network = "mainnet", page = 1, limit = 25): Promise<Transaction[]> {
     const result = await this.fetch<Transaction[] | "">(network, {
       module: "account",
       action: "txlist",
@@ -115,7 +110,7 @@ export class TaikoscanClient {
   async getTokenTransfers(
     address: string,
     network: Network = "mainnet",
-    contractAddress?: string,
+    contractAddress?: string
   ): Promise<Transaction[]> {
     const params: Record<string, string> = {
       module: "account",
@@ -158,7 +153,7 @@ export class TaikoscanClient {
   async getNFTHoldings(
     address: string,
     network: Network = "mainnet",
-    type: "ERC-721" | "ERC-1155" | "all" = "all",
+    type: "ERC-721" | "ERC-1155" | "all" = "all"
   ): Promise<TokenBalance[]> {
     const params: Record<string, string> = {
       module: "account",

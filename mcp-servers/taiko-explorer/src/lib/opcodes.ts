@@ -2,12 +2,17 @@
  * Blocked opcodes on Taiko's Shanghai EVM.
  * Taiko runs Shanghai (not Cancun/Prague) until the Gwyneth upgrade.
  * PUSH0 (0x5F) IS available — Shanghai added it.
+ *
+ * MAINTENANCE: Update this list when Taiko upgrades its EVM version.
+ * After Gwyneth (Cancun support), remove TLOAD/TSTORE/MCOPY/BLOBHASH/BLOBBASEFEE.
+ * After Pectra support, review for any new opcodes.
+ * Track: https://github.com/taikoxyz/taiko-mono for EVM upgrade announcements.
  */
 export const BLOCKED_OPCODES: Record<number, string> = {
-  0x5c: "TLOAD",       // EIP-1153 transient storage load (Cancun)
-  0x5d: "TSTORE",      // EIP-1153 transient storage store (Cancun)
-  0x5e: "MCOPY",       // EIP-5656 memory copy (Cancun)
-  0x49: "BLOBHASH",    // EIP-4844 blob hash (Cancun)
+  0x5c: "TLOAD", // EIP-1153 transient storage load (Cancun)
+  0x5d: "TSTORE", // EIP-1153 transient storage store (Cancun)
+  0x5e: "MCOPY", // EIP-5656 memory copy (Cancun)
+  0x49: "BLOBHASH", // EIP-4844 blob hash (Cancun)
   0x4a: "BLOBBASEFEE", // EIP-7516 blob base fee (Cancun)
 };
 

@@ -40,9 +40,7 @@ export function registerReadTools(server: McpServer): void {
       chain: z
         .enum(["l1", "l2"])
         .default("l2")
-        .describe(
-          "Which chain to query on-chain status — l1 for L2→L1 messages, l2 for L1→L2 (default: l2)"
-        ),
+        .describe("Which chain to query on-chain status — l1 for L2→L1 messages, l2 for L1→L2 (default: l2)"),
     },
     async ({ msgHash, network, chain }) => {
       const net = network as TaikoNetwork;
@@ -217,14 +215,14 @@ export function registerReadTools(server: McpServer): void {
                 name: "USD Coin",
                 type: "ERC20",
                 l1Address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                l2Address: "check Taikoscan for canonical bridged USDC",
+                l2Address: "bridged — look up at taikoscan.io/tokens or bridge.taiko.xyz",
               },
               {
                 symbol: "WETH",
                 name: "Wrapped Ether",
                 type: "ERC20",
                 l1Address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                l2Address: "check Taikoscan for canonical bridged WETH",
+                l2Address: "bridged — look up at taikoscan.io/tokens or bridge.taiko.xyz",
               },
             ]
           : [
@@ -239,8 +237,8 @@ export function registerReadTools(server: McpServer): void {
                 symbol: "TAIKO",
                 name: "Taiko Token (Hoodi)",
                 type: "ERC20",
-                l1Address: "check hoodi.taikoscan.io",
-                l2Address: "check hoodi.taikoscan.io",
+                l1Address: "testnet — look up at hoodi.taikoscan.io/tokens",
+                l2Address: "testnet — look up at hoodi.taikoscan.io/tokens",
               },
             ];
 

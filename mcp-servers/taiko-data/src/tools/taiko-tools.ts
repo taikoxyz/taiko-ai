@@ -5,20 +5,19 @@ import { TaikoscanClient, BlockscoutClient, RelayerClient } from "@taikoxyz/taik
 import { getProvider, getHeadL1Origin } from "../lib/rpc.js";
 import { NETWORKS, type Network } from "../networks.js";
 
-const networkParam = z.enum(["mainnet", "hoodi"]).default("mainnet").describe(
-  "Taiko network: mainnet (chain 167000) or hoodi testnet (chain 167013)"
-);
+const networkParam = z
+  .enum(["mainnet", "hoodi"])
+  .default("mainnet")
+  .describe("Taiko network: mainnet (chain 167000) or hoodi testnet (chain 167013)");
 
 // Minimal ABI for TaikoAnchor getCheckpoint function
-const ANCHOR_ABI = [
-  "function getCheckpoint(uint256 blockId) view returns (bytes32 stateRoot, bytes32 signalRoot)",
-];
+const ANCHOR_ABI = ["function getCheckpoint(uint256 blockId) view returns (bytes32 stateRoot, bytes32 signalRoot)"];
 
 export function registerTaikoTools(
   server: McpServer,
   taikoscan: TaikoscanClient,
   blockscout: BlockscoutClient,
-  relayer: RelayerClient,
+  relayer: RelayerClient
 ): void {
   // get_anchor_block_state
   server.tool(
@@ -28,10 +27,7 @@ export function registerTaikoTools(
       network: networkParam,
     },
     async ({ network }) => {
-      const [l1Origin, provider] = await Promise.all([
-        getHeadL1Origin(network),
-        getProvider(network),
-      ]);
+      const [l1Origin, provider] = await Promise.all([getHeadL1Origin(network), getProvider(network)]);
       const l2BlockNumber = await provider.getBlockNumber();
       const l1BlockHeight = parseInt(l1Origin.l1BlockHeight, 16);
       const l2BlockId = parseInt(l1Origin.blockID, 16);
@@ -39,9 +35,10 @@ export function registerTaikoTools(
       // Get current Ethereum L1 block number for lag calculation
       let l1CurrentBlock: number | null = null;
       try {
-        const l1RpcUrl = network === "mainnet"
-          ? "https://eth.drpc.org"
-          : "https://hoodi.drpc.org";
+        const l1RpcUrl =
+          network === "mainnet"
+            ? (process.env.TAIKO_L1_RPC ?? process.env.TAIKO_L1_MAINNET_RPC ?? "https://eth.drpc.org")
+            : (process.env.TAIKO_L1_RPC ?? process.env.TAIKO_L1_HOODI_RPC ?? "https://hoodi.drpc.org");
         const l1Res = await globalThis.fetch(l1RpcUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -56,22 +53,24 @@ export function registerTaikoTools(
       }
 
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            network,
-            l2BlockNumber,
-            l2BlockId,
-            anchoredToL1Block: l1BlockHeight,
-            l1BlockHash: l1Origin.l1BlockHash,
-            l2BlockHash: l1Origin.l2BlockHash,
-            l1CurrentBlock,
-            l1LagBlocks: l1CurrentBlock ? l1CurrentBlock - l1BlockHeight : null,
-            isForcedInclusion: l1Origin.isForcedInclusion ?? false,
-          }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              network,
+              l2BlockNumber,
+              l2BlockId,
+              anchoredToL1Block: l1BlockHeight,
+              l1BlockHash: l1Origin.l1BlockHash,
+              l2BlockHash: l1Origin.l2BlockHash,
+              l1CurrentBlock,
+              l1LagBlocks: l1CurrentBlock ? l1CurrentBlock - l1BlockHeight : null,
+              isForcedInclusion: l1Origin.isForcedInclusion ?? false,
+            }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_l1_checkpoint
@@ -100,37 +99,41 @@ export function registerTaikoTools(
         checkpoint = null;
       }
 
-      // If on-chain call fails, return L1 origin info from RPC
+      // If on-chain call fails, return L1 origin info from RPC with clear warning
       if (!checkpoint) {
         const l1Origin = await getHeadL1Origin(network);
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              network,
-              l2BlockNumber: l2_block_number,
-              note: "getCheckpoint not available; returning current head L1 origin instead",
-              l1BlockHeight: parseInt(l1Origin.l1BlockHeight, 16),
-              l1BlockHash: l1Origin.l1BlockHash,
-              l2BlockHash: l1Origin.l2BlockHash,
-            }),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                network,
+                l2BlockNumber: l2_block_number,
+                warning: `getCheckpoint not available for block ${l2_block_number}; returning current HEAD L1 origin instead. This is NOT the L1 state at block ${l2_block_number}.`,
+                l1BlockHeight: parseInt(l1Origin.l1BlockHeight, 16),
+                l1BlockHash: l1Origin.l1BlockHash,
+                l2BlockHash: l1Origin.l2BlockHash,
+              }),
+            },
+          ],
         };
       }
 
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            network,
-            l2BlockNumber: l2_block_number,
-            anchorAddress,
-            stateRoot: checkpoint.stateRoot,
-            signalRoot: checkpoint.signalRoot,
-          }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              network,
+              l2BlockNumber: l2_block_number,
+              anchorAddress,
+              stateRoot: checkpoint.stateRoot,
+              signalRoot: checkpoint.signalRoot,
+            }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_bridge_message_status
@@ -148,23 +151,27 @@ export function registerTaikoTools(
       if (status) {
         const event = await relayer.getEventByMsgHash(msg_hash, network);
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              network,
-              msgHash: msg_hash,
-              status,
-              source: "relayer_api",
-              event: event ? {
-                destChainId: event.destChainID,
-                srcChainId: event.chainID,
-                amount: event.amount,
-                canonicalToken: event.canonicalTokenSymbol ?? null,
-                createdAt: event.createdAt,
-                updatedAt: event.updatedAt,
-              } : null,
-            }),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                network,
+                msgHash: msg_hash,
+                status,
+                source: "relayer_api",
+                event: event
+                  ? {
+                      destChainId: event.destChainID,
+                      srcChainId: event.chainID,
+                      amount: event.amount,
+                      canonicalToken: event.canonicalTokenSymbol ?? null,
+                      createdAt: event.createdAt,
+                      updatedAt: event.updatedAt,
+                    }
+                  : null,
+              }),
+            },
+          ],
         };
       }
 
@@ -178,31 +185,35 @@ export function registerTaikoTools(
         const statusNum = (await bridge.messageStatus(msg_hash)) as bigint;
         const statusName = STATUS_NAMES[Number(statusNum)] ?? "UNKNOWN";
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              network,
-              msgHash: msg_hash,
-              status: statusName,
-              statusCode: Number(statusNum),
-              source: "on_chain",
-            }),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                network,
+                msgHash: msg_hash,
+                status: statusName,
+                statusCode: Number(statusNum),
+                source: "on_chain",
+              }),
+            },
+          ],
         };
       } catch {
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              network,
-              msgHash: msg_hash,
-              status: null,
-              error: "Message not found in relayer or on-chain. Hash may be a tx hash, not a message hash.",
-            }),
-          }],
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                network,
+                msgHash: msg_hash,
+                status: null,
+                error: "Message not found in relayer or on-chain. Hash may be a tx hash, not a message hash.",
+              }),
+            },
+          ],
         };
       }
-    },
+    }
   );
 
   // get_nft_holdings
@@ -216,28 +227,28 @@ export function registerTaikoTools(
     },
     async ({ address, type, network }) => {
       const holdings = await taikoscan.getNFTHoldings(address, network, type);
-      const nfts = holdings.filter((h) =>
-        h.tokenType === "ERC-721" || h.tokenType === "ERC-1155"
-      );
+      const nfts = holdings.filter((h) => h.tokenType === "ERC-721" || h.tokenType === "ERC-1155");
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            address,
-            network,
-            type,
-            count: nfts.length,
-            holdings: nfts.map((h) => ({
-              contractAddress: h.contractAddress,
-              tokenName: h.tokenName,
-              symbol: h.symbol,
-              tokenType: h.tokenType,
-              balance: h.balance,
-            })),
-          }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              address,
+              network,
+              type,
+              count: nfts.length,
+              holdings: nfts.map((h) => ({
+                contractAddress: h.contractAddress,
+                tokenName: h.tokenName,
+                symbol: h.symbol,
+                tokenType: h.tokenType,
+                balance: h.balance,
+              })),
+            }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // search
@@ -258,61 +269,64 @@ export function registerTaikoTools(
         // Direct lookups
         const provider = getProvider(network);
         if (isAddress) {
-          const [balance, code] = await Promise.all([
-            provider.getBalance(query),
-            provider.getCode(query),
-          ]);
+          const [balance, code] = await Promise.all([provider.getBalance(query), provider.getCode(query)]);
           const isContract = code !== "0x";
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                query,
-                network,
-                type: isContract ? "contract" : "address",
-                address: query,
-                balance: ethers.formatEther(balance),
-                isContract,
-                explorerUrl: `${NETWORKS[network].taikoscanExplorer}/address/${query}`,
-              }),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  query,
+                  network,
+                  type: isContract ? "contract" : "address",
+                  address: query,
+                  balance: ethers.formatEther(balance),
+                  isContract,
+                  explorerUrl: `${NETWORKS[network].taikoscanExplorer}/address/${query}`,
+                }),
+              },
+            ],
           };
         }
         if (isTxHash) {
           const tx = await provider.getTransaction(query);
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                query,
-                network,
-                type: "transaction",
-                found: !!tx,
-                blockNumber: tx?.blockNumber,
-                from: tx?.from,
-                to: tx?.to,
-                explorerUrl: `${NETWORKS[network].taikoscanExplorer}/tx/${query}`,
-              }),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  query,
+                  network,
+                  type: "transaction",
+                  found: !!tx,
+                  blockNumber: tx?.blockNumber,
+                  from: tx?.from,
+                  to: tx?.to,
+                  explorerUrl: `${NETWORKS[network].taikoscanExplorer}/tx/${query}`,
+                }),
+              },
+            ],
           };
         }
         if (isBlockNumber) {
           const block = await provider.getBlock(parseInt(query));
           return {
-            content: [{
-              type: "text",
-              text: JSON.stringify({
-                query,
-                network,
-                type: "block",
-                found: !!block,
-                number: block?.number,
-                hash: block?.hash,
-                timestamp: block?.timestamp,
-                transactionCount: block?.transactions.length,
-                explorerUrl: `${NETWORKS[network].taikoscanExplorer}/block/${query}`,
-              }),
-            }],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  query,
+                  network,
+                  type: "block",
+                  found: !!block,
+                  number: block?.number,
+                  hash: block?.hash,
+                  timestamp: block?.timestamp,
+                  transactionCount: block?.transactions.length,
+                  explorerUrl: `${NETWORKS[network].taikoscanExplorer}/block/${query}`,
+                }),
+              },
+            ],
           };
         }
       }
@@ -320,26 +334,26 @@ export function registerTaikoTools(
       // Token/name search via Blockscout
       const results = await blockscout.search(query, network);
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            query,
-            network,
-            count: results.items.length,
-            results: results.items.slice(0, 10).map((item) => ({
-              type: item.type,
-              address: item.address,
-              name: item.name,
-              symbol: item.symbol,
-              tokenType: item.token_type,
-              isVerified: item.is_smart_contract_verified,
-              explorerUrl: item.address
-                ? `${NETWORKS[network].taikoscanExplorer}/address/${item.address}`
-                : null,
-            })),
-          }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              query,
+              network,
+              count: results.items.length,
+              results: results.items.slice(0, 10).map((item) => ({
+                type: item.type,
+                address: item.address,
+                name: item.name,
+                symbol: item.symbol,
+                tokenType: item.token_type,
+                isVerified: item.is_smart_contract_verified,
+                explorerUrl: item.address ? `${NETWORKS[network].taikoscanExplorer}/address/${item.address}` : null,
+              })),
+            }),
+          },
+        ],
       };
-    },
+    }
   );
 }

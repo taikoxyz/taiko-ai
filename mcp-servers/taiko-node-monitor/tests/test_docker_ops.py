@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import pytest
 from unittest.mock import MagicMock, patch
 
-from taiko_node_monitor.docker_ops import SERVICES, FRIENDLY_NAMES
+import pytest
+
+from taiko_node_monitor.docker_ops import FRIENDLY_NAMES, SERVICES
 
 
 def test_services_dict_has_correct_labels():
@@ -93,13 +94,13 @@ def test_get_logs_applies_filter():
 
     mock_container = MagicMock()
     mock_container.logs.return_value = (
-        b"2024 INFO normal operation\n"
-        b"2024 ERROR something went wrong\n"
-        b"2024 INFO more normal stuff\n"
+        b"2024 INFO normal operation\n2024 ERROR something went wrong\n2024 INFO more normal stuff\n"
     )
 
-    with patch("taiko_node_monitor.docker_ops.get_docker_client") as mock_get_client, \
-         patch("taiko_node_monitor.docker_ops.find_container", return_value=mock_container):
+    with (
+        patch("taiko_node_monitor.docker_ops.get_docker_client") as mock_get_client,
+        patch("taiko_node_monitor.docker_ops.find_container", return_value=mock_container),
+    ):
         mock_get_client.return_value = MagicMock()
         result = get_logs("l2_execution_engine", lines=100, filter_text="error")
 
@@ -115,8 +116,10 @@ def test_get_logs_no_filter_returns_all_lines():
     mock_container = MagicMock()
     mock_container.logs.return_value = b"line1\nline2\nline3\n"
 
-    with patch("taiko_node_monitor.docker_ops.get_docker_client") as mock_get_client, \
-         patch("taiko_node_monitor.docker_ops.find_container", return_value=mock_container):
+    with (
+        patch("taiko_node_monitor.docker_ops.get_docker_client") as mock_get_client,
+        patch("taiko_node_monitor.docker_ops.find_container", return_value=mock_container),
+    ):
         mock_get_client.return_value = MagicMock()
         result = get_logs("l2_execution_engine", lines=100)
 
@@ -132,8 +135,10 @@ def test_get_logs_caps_at_500():
     mock_container = MagicMock()
     mock_container.logs.return_value = b"some log\n"
 
-    with patch("taiko_node_monitor.docker_ops.get_docker_client") as mock_get_client, \
-         patch("taiko_node_monitor.docker_ops.find_container", return_value=mock_container):
+    with (
+        patch("taiko_node_monitor.docker_ops.get_docker_client") as mock_get_client,
+        patch("taiko_node_monitor.docker_ops.find_container", return_value=mock_container),
+    ):
         mock_get_client.return_value = MagicMock()
         get_logs("l2_execution_engine", lines=9999)
 

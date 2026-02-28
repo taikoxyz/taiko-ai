@@ -4,9 +4,10 @@ import { z } from "zod";
 import { TaikoscanClient } from "@taikoxyz/taiko-api-client";
 import { getProvider } from "../lib/rpc.js";
 
-const networkParam = z.enum(["mainnet", "hoodi"]).default("mainnet").describe(
-  "Taiko network: mainnet (chain 167000) or hoodi testnet (chain 167013)"
-);
+const networkParam = z
+  .enum(["mainnet", "hoodi"])
+  .default("mainnet")
+  .describe("Taiko network: mainnet (chain 167000) or hoodi testnet (chain 167013)");
 
 export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient): void {
   // get_balance
@@ -21,12 +22,14 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       const balanceWei = await taikoscan.getBalance(address, network);
       const balanceEth = ethers.formatEther(balanceWei);
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({ address, network, balanceWei, balanceEth }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ address, network, balanceWei, balanceEth }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_transactions
@@ -42,12 +45,14 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
     async ({ address, network, page, limit }) => {
       const txs = await taikoscan.getTransactions(address, network, page, limit);
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({ address, network, page, count: txs.length, transactions: txs }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ address, network, page, count: txs.length, transactions: txs }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_block_info
@@ -66,22 +71,24 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
         return { content: [{ type: "text", text: `Block not found: ${block_number}` }] };
       }
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            network,
-            number: block.number,
-            hash: block.hash,
-            timestamp: block.timestamp,
-            parentHash: block.parentHash,
-            gasLimit: block.gasLimit?.toString(),
-            gasUsed: block.gasUsed?.toString(),
-            baseFeePerGas: block.baseFeePerGas?.toString(),
-            transactionCount: block.transactions.length,
-          }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              network,
+              number: block.number,
+              hash: block.hash,
+              timestamp: block.timestamp,
+              parentHash: block.parentHash,
+              gasLimit: block.gasLimit?.toString(),
+              gasUsed: block.gasUsed?.toString(),
+              baseFeePerGas: block.baseFeePerGas?.toString(),
+              transactionCount: block.transactions.length,
+            }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_transaction_info
@@ -94,34 +101,33 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
     },
     async ({ hash, network }) => {
       const provider = getProvider(network);
-      const [tx, receipt] = await Promise.all([
-        provider.getTransaction(hash),
-        provider.getTransactionReceipt(hash),
-      ]);
+      const [tx, receipt] = await Promise.all([provider.getTransaction(hash), provider.getTransactionReceipt(hash)]);
       if (!tx) {
         return { content: [{ type: "text", text: `Transaction not found: ${hash}` }] };
       }
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            network,
-            hash,
-            from: tx.from,
-            to: tx.to,
-            value: tx.value.toString(),
-            valueEth: ethers.formatEther(tx.value),
-            gasPrice: tx.gasPrice?.toString(),
-            gasLimit: tx.gasLimit?.toString(),
-            nonce: tx.nonce,
-            blockNumber: tx.blockNumber,
-            status: receipt?.status === 1 ? "success" : receipt?.status === 0 ? "reverted" : "pending",
-            gasUsed: receipt?.gasUsed?.toString(),
-            input: tx.data,
-          }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              network,
+              hash,
+              from: tx.from,
+              to: tx.to,
+              value: tx.value.toString(),
+              valueEth: ethers.formatEther(tx.value),
+              gasPrice: tx.gasPrice?.toString(),
+              gasLimit: tx.gasLimit?.toString(),
+              nonce: tx.nonce,
+              blockNumber: tx.blockNumber,
+              status: receipt?.status === 1 ? "success" : receipt?.status === 0 ? "reverted" : "pending",
+              gasUsed: receipt?.gasUsed?.toString(),
+              input: tx.data,
+            }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_contract_abi
@@ -141,12 +147,14 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
         abi = abiStr;
       }
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({ address, network, abi }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ address, network, abi }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // read_contract
@@ -168,16 +176,19 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       }
       const contract = new ethers.Contract(address, JSON.parse(abiStr), provider);
       const result = await contract[function_name](...args);
-      const resultStr = typeof result === "bigint" ? result.toString() : JSON.stringify(result, (_k, v) =>
-        typeof v === "bigint" ? v.toString() : v
-      );
+      const resultStr =
+        typeof result === "bigint"
+          ? result.toString()
+          : JSON.stringify(result, (_k, v) => (typeof v === "bigint" ? v.toString() : v));
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({ address, network, function: function_name, args, result: resultStr }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ address, network, function: function_name, args, result: resultStr }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_token_transfers
@@ -192,12 +203,14 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
     async ({ address, token, network }) => {
       const transfers = await taikoscan.getTokenTransfers(address, network, token);
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({ address, network, count: transfers.length, transfers }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ address, network, count: transfers.length, transfers }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_gas_price
@@ -214,19 +227,21 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       ]);
       const feeData = await provider.getFeeData();
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            network,
-            gasPrice: feeData.gasPrice?.toString(),
-            gasPriceGwei: feeData.gasPrice ? ethers.formatUnits(feeData.gasPrice, "gwei") : null,
-            maxFeePerGas: feeData.maxFeePerGas?.toString(),
-            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString(),
-            oracle: oracle ?? "unavailable",
-          }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              network,
+              gasPrice: feeData.gasPrice?.toString(),
+              gasPriceGwei: feeData.gasPrice ? ethers.formatUnits(feeData.gasPrice, "gwei") : null,
+              maxFeePerGas: feeData.maxFeePerGas?.toString(),
+              maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString(),
+              oracle: oracle ?? "unavailable",
+            }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_block_number
@@ -240,12 +255,14 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       const provider = getProvider(network);
       const blockNumber = await provider.getBlockNumber();
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({ network, blockNumber }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ network, blockNumber }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_transaction_count
@@ -260,12 +277,14 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       const provider = getProvider(network);
       const count = await provider.getTransactionCount(address);
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({ address, network, transactionCount: count }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ address, network, transactionCount: count }),
+          },
+        ],
       };
-    },
+    }
   );
 
   // get_logs
@@ -280,6 +299,15 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       network: networkParam,
     },
     async ({ address, event_signature, from_block, to_block, network }) => {
+      // Cap block range to prevent RPC timeout / OOM (most providers cap at 2k-10k blocks)
+      const MAX_BLOCK_RANGE = 10_000;
+      if (from_block !== undefined && to_block !== undefined && to_block - from_block > MAX_BLOCK_RANGE) {
+        throw new Error(
+          `Block range ${to_block - from_block} exceeds maximum of ${MAX_BLOCK_RANGE}. ` +
+            `Use a narrower range or paginate with multiple calls.`
+        );
+      }
+
       const provider = getProvider(network);
       const filter: ethers.Filter = {
         address,
@@ -291,11 +319,13 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
       }
       const logs = await provider.getLogs(filter);
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({ address, network, count: logs.length, logs }),
-        }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ address, network, count: logs.length, logs }),
+          },
+        ],
       };
-    },
+    }
   );
 }

@@ -54,7 +54,8 @@ export function registerCompatTools(server: McpServer): void {
               text: JSON.stringify({
                 address,
                 network,
-                error: "No bytecode found at address. The account may be an EOA or the contract may not be deployed on this network.",
+                error:
+                  "No bytecode found at address. The account may be an EOA or the contract may not be deployed on this network.",
               }),
             },
           ],

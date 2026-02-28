@@ -1,10 +1,6 @@
 /** Minimal JSON-RPC helper for CLI commands. */
 
-export async function jsonRpc(
-  url: string,
-  method: string,
-  params: unknown[] = []
-): Promise<unknown> {
+export async function jsonRpc(url: string, method: string, params: unknown[] = []): Promise<unknown> {
   const resp = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -27,11 +23,11 @@ export async function pingRpc(url: string): Promise<boolean> {
   }
 }
 
-/** Returns true if the URL responds with a 2xx status. */
+/** Returns true if the URL responds with a 2xx status. Uses GET because some servers (e.g. Taiko relayer) reject HEAD. */
 export async function pingUrl(url: string): Promise<boolean> {
   try {
     const resp = await fetch(url, {
-      method: "HEAD",
+      method: "GET",
       signal: AbortSignal.timeout(5_000),
     });
     return resp.ok;

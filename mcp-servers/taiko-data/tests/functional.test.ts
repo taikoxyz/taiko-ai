@@ -85,7 +85,7 @@ describe("Taikoscan tools (Etherscan V2 API key required)", () => {
       const eth = ethers.formatEther(balance);
       expect(parseFloat(eth)).toBeGreaterThan(0);
     },
-    15_000,
+    15_000
   );
 
   it.skipIf(!hasApiKey)(
@@ -97,7 +97,7 @@ describe("Taikoscan tools (Etherscan V2 API key required)", () => {
       expect(Array.isArray(parsed)).toBe(true);
       expect(parsed.length).toBeGreaterThan(0);
     },
-    15_000,
+    15_000
   );
 
   it.skipIf(!hasApiKey)(
@@ -113,7 +113,7 @@ describe("Taikoscan tools (Etherscan V2 API key required)", () => {
       expect(feeData.gasPrice).not.toBeNull();
       expect(feeData.gasPrice!).toBeGreaterThan(0n);
     },
-    15_000,
+    15_000
   );
 });
 

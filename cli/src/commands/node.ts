@@ -59,10 +59,7 @@ export function nodeCommand(program: Command): void {
           mode
         );
       } catch (e: unknown) {
-        output(
-          err("node start", net, [(e instanceof Error ? e.message : String(e))]),
-          mode
-        );
+        output(err("node start", net, [e instanceof Error ? e.message : String(e)]), mode);
         process.exit(1);
       }
     });
@@ -82,7 +79,7 @@ export function nodeCommand(program: Command): void {
         dockerCompose(["down"], composeDir);
         output(ok("node stop", net, { compose_dir: composeDir, status: "stopped" }), mode);
       } catch (e: unknown) {
-        output(err("node stop", net, [(e instanceof Error ? e.message : String(e))]), mode);
+        output(err("node stop", net, [e instanceof Error ? e.message : String(e)]), mode);
         process.exit(1);
       }
     });
@@ -103,7 +100,7 @@ export function nodeCommand(program: Command): void {
         dockerCompose(["up", "-d"], composeDir);
         output(ok("node restart", net, { compose_dir: composeDir, status: "restarted" }), mode);
       } catch (e: unknown) {
-        output(err("node restart", net, [(e instanceof Error ? e.message : String(e))]), mode);
+        output(err("node restart", net, [e instanceof Error ? e.message : String(e)]), mode);
         process.exit(1);
       }
     });
@@ -183,30 +180,28 @@ export function nodeCommand(program: Command): void {
     .option("--service <name>", "Service name (l2_execution_engine or taiko_client_driver)")
     .option("--tail <n>", "Number of lines to show from the end (default: 100)")
     .option("--json", "Output metadata as JSON (log lines always go to stdout)")
-    .action(
-      (opts: { follow?: boolean; service?: string; tail?: string; json?: boolean }) => {
-        const composeDir = getComposeDir();
-        if (!existsSync(composeDir)) {
-          console.error(`simple-taiko-node not found: ${composeDir}`);
-          process.exit(1);
-        }
-
-        const args = ["logs"];
-        if (opts.follow) args.push("--follow");
-        args.push("--tail", opts.tail ?? "100");
-        if (opts.service) args.push(opts.service);
-
-        // Stream logs — pass stdio through
-        const child = spawn("docker", ["compose", ...args], {
-          cwd: composeDir,
-          stdio: "inherit",
-        });
-
-        child.on("exit", (code) => {
-          process.exit(code ?? 0);
-        });
+    .action((opts: { follow?: boolean; service?: string; tail?: string; json?: boolean }) => {
+      const composeDir = getComposeDir();
+      if (!existsSync(composeDir)) {
+        console.error(`simple-taiko-node not found: ${composeDir}`);
+        process.exit(1);
       }
-    );
+
+      const args = ["logs"];
+      if (opts.follow) args.push("--follow");
+      args.push("--tail", opts.tail ?? "100");
+      if (opts.service) args.push(opts.service);
+
+      // Stream logs — pass stdio through
+      const child = spawn("docker", ["compose", ...args], {
+        cwd: composeDir,
+        stdio: "inherit",
+      });
+
+      child.on("exit", (code) => {
+        process.exit(code ?? 0);
+      });
+    });
 
   // ─── node upgrade ─────────────────────────────────────────────────────────
   node
@@ -224,7 +219,7 @@ export function nodeCommand(program: Command): void {
         dockerCompose(["up", "-d"], composeDir);
         output(ok("node upgrade", net, { compose_dir: composeDir, status: "upgraded" }), mode);
       } catch (e: unknown) {
-        output(err("node upgrade", net, [(e instanceof Error ? e.message : String(e))]), mode);
+        output(err("node upgrade", net, [e instanceof Error ? e.message : String(e)]), mode);
         process.exit(1);
       }
     });

@@ -46,9 +46,10 @@ export function registerAbiTools(server: McpServer): void {
               network,
               contractCreator: creators[0]?.contractCreator,
               deployTxHash: creators[0]?.txHash,
-              explorerUrl: network === "mainnet"
-                ? `https://taikoscan.io/address/${address}`
-                : `https://hoodi.taikoscan.io/address/${address}`,
+              explorerUrl:
+                network === "mainnet"
+                  ? `https://taikoscan.io/address/${address}`
+                  : `https://hoodi.taikoscan.io/address/${address}`,
             }),
           },
         ],

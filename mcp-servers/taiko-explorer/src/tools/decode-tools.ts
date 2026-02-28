@@ -1,8 +1,15 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { keccak_256 } from "@noble/hashes/sha3";
 import { TaikoscanClient } from "@taikoxyz/taiko-api-client";
 import { type Network } from "@taikoxyz/taiko-api-client";
 import { lookupSignature } from "../lib/signatures.js";
+
+/** Compute the 4-byte function selector from a canonical signature like "transfer(address,uint256)". */
+function computeFunctionSelector(signature: string): string {
+  const hash = keccak_256(new TextEncoder().encode(signature));
+  return "0x" + Buffer.from(hash.slice(0, 4)).toString("hex");
+}
 
 const networkParam = z
   .enum(["mainnet", "hoodi"])
@@ -46,10 +53,7 @@ export function registerDecodeTools(server: McpServer): void {
       "(4) raw hex with selector.",
     {
       calldata: z.string().describe("Hex calldata starting with 0x (at least 10 chars for the selector)"),
-      address: z
-        .string()
-        .optional()
-        .describe("Contract address for ABI-based decoding (most accurate)"),
+      address: z.string().optional().describe("Contract address for ABI-based decoding (most accurate)"),
       network: networkParam,
     },
     async ({ calldata, address, network }) => {
@@ -70,11 +74,13 @@ export function registerDecodeTools(server: McpServer): void {
             inputs?: Array<{ name: string; type: string }>;
           }>;
 
-          // Find matching function by selector
+          // Find matching function by keccak256 selector comparison
           const functions = abi.filter((item) => item.type === "function" && item.name);
           for (const fn of functions) {
             if (!fn.name) continue;
             const sig = `${fn.name}(${fn.inputs?.map((i) => i.type).join(",") ?? ""})`;
+            const computedSelector = computeFunctionSelector(sig);
+            if (computedSelector !== selector) continue;
             const decoded = decodeWithSignature(calldata, sig);
             return {
               content: [

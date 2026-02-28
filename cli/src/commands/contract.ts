@@ -55,6 +55,10 @@ export function contractCommand(program: Command): void {
           process.exit(1);
         }
 
+        // NOTE: The API key is passed as a CLI argument to forge, which means it is
+        // visible in process listings (e.g. `ps aux`). This is a forge limitation —
+        // forge verify-contract does not support reading the key from stdin or a file.
+        // The key is redacted in human-mode console output below.
         const forgeArgs = [
           "verify-contract",
           address,
@@ -118,11 +122,7 @@ function runForge(args: string[]): Promise<void> {
     const proc = spawn("forge", args, { stdio: "inherit" });
     proc.on("error", (err) => {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-        reject(
-          new Error(
-            "forge not found. Install Foundry: curl -L https://foundry.paradigm.xyz | bash"
-          )
-        );
+        reject(new Error("forge not found. Install Foundry: curl -L https://foundry.paradigm.xyz | bash"));
       } else {
         reject(err);
       }

@@ -84,13 +84,7 @@ export const IERC20VaultABI = [
 ] as const;
 
 /** Message status codes from IBridge.Status enum (0-indexed). */
-export const MESSAGE_STATUS_LABELS = [
-  "NEW",
-  "RETRIABLE",
-  "DONE",
-  "FAILED",
-  "RECALLED",
-] as const;
+export const MESSAGE_STATUS_LABELS = ["NEW", "RETRIABLE", "DONE", "FAILED", "RECALLED"] as const;
 
 export type MessageStatusLabel = (typeof MESSAGE_STATUS_LABELS)[number];
 

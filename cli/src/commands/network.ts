@@ -15,19 +15,13 @@ export function networkCommand(program: Command): void {
     .action((networkName: string, opts: { json?: boolean }) => {
       const mode: OutputMode = opts.json ? "json" : "human";
       if (networkName !== "mainnet" && networkName !== "hoodi") {
-        output(
-          err("network switch", networkName, [`Unknown network: "${networkName}". Use mainnet or hoodi.`]),
-          mode
-        );
+        output(err("network switch", networkName, [`Unknown network: "${networkName}". Use mainnet or hoodi.`]), mode);
         process.exit(1);
       }
       const config = readConfig();
       config.active_network = networkName;
       writeConfig(config);
-      output(
-        ok("network switch", networkName, { active_network: networkName }),
-        mode
-      );
+      output(ok("network switch", networkName, { active_network: networkName }), mode);
     });
 
   // ─── network status ──────────────────────────────────────────────────────
@@ -39,7 +33,12 @@ export function networkCommand(program: Command): void {
     .action(async (opts: { json?: boolean; network?: string }) => {
       const mode: OutputMode = opts.json ? "json" : "human";
       const config = readConfig();
-      const net = (opts.network as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
+      const rawNet = opts.network;
+      if (rawNet !== undefined && rawNet !== "mainnet" && rawNet !== "hoodi") {
+        output(err("network status", rawNet, [`Unknown network: "${rawNet}". Use mainnet or hoodi.`]), mode);
+        process.exit(1);
+      }
+      const net = (rawNet as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
       const rpcUrl = getRpcUrl(config, net);
       const netConfig = NETWORKS[net];
 
@@ -92,7 +91,12 @@ export function networkCommand(program: Command): void {
     .action(async (opts: { json?: boolean; network?: string }) => {
       const mode: OutputMode = opts.json ? "json" : "human";
       const config = readConfig();
-      const net = (opts.network as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
+      const rawNet = opts.network;
+      if (rawNet !== undefined && rawNet !== "mainnet" && rawNet !== "hoodi") {
+        output(err("network info", rawNet, [`Unknown network: "${rawNet}". Use mainnet or hoodi.`]), mode);
+        process.exit(1);
+      }
+      const net = (rawNet as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
       const rpcUrl = getRpcUrl(config, net);
       const netConfig = NETWORKS[net];
 
@@ -100,10 +104,7 @@ export function networkCommand(program: Command): void {
       let gasPrice: string | null = null;
 
       try {
-        const [bn, gp] = await Promise.all([
-          jsonRpc(rpcUrl, "eth_blockNumber"),
-          jsonRpc(rpcUrl, "eth_gasPrice"),
-        ]);
+        const [bn, gp] = await Promise.all([jsonRpc(rpcUrl, "eth_blockNumber"), jsonRpc(rpcUrl, "eth_gasPrice")]);
         blockNumber = parseHexNumber(bn);
         const gpWei = parseHexNumber(gp);
         gasPrice = `${(gpWei / 1e9).toFixed(4)} Gwei`;

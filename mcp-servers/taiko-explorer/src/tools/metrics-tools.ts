@@ -81,8 +81,7 @@ export function registerMetricsTools(server: McpServer): void {
                 network,
                 error: "Similar contracts endpoint not available on this Blockscout instance.",
                 detail: message,
-                suggestion:
-                  "Try searching Taikoscan directly for contracts with the same verified source code.",
+                suggestion: "Try searching Taikoscan directly for contracts with the same verified source code.",
               }),
             },
           ],

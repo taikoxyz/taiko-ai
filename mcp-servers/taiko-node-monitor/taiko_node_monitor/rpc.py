@@ -18,9 +18,7 @@ async def rpc_call(url: str, method: str, params: list | None = None) -> object:
         data = resp.json()
         if "error" in data:
             err = data["error"]
-            raise RuntimeError(
-                f"RPC error {err.get('code', '')}: {err.get('message', str(err))}"
-            )
+            raise RuntimeError(f"RPC error {err.get('code', '')}: {err.get('message', str(err))}")
         return data["result"]
 
 

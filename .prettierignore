@@ -1,0 +1,6 @@
+dist/
+node_modules/
+*.md
+package-lock.json
+mcp-servers/taiko-node-monitor/
+.context/

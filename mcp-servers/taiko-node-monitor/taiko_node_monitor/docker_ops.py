@@ -1,4 +1,10 @@
-"""Docker SDK integration for simple-taiko-node containers."""
+"""Docker SDK integration for simple-taiko-node containers.
+
+Security note: This module accesses the Docker socket (/var/run/docker.sock or DOCKER_HOST),
+which grants root-equivalent power on the host. Container lookup uses Docker Compose
+service labels (com.docker.compose.service) rather than user-supplied names to prevent
+injection. Only known service names from the SERVICES dict are accepted.
+"""
 
 from __future__ import annotations
 
@@ -10,8 +16,8 @@ import docker.errors
 
 # Docker Compose service names from taikoxyz/simple-taiko-node docker-compose.yml
 SERVICES: dict[str, str] = {
-    "l2_execution_engine": "l2_execution_engine",   # taiko-geth
-    "taiko_client_driver": "taiko_client_driver",   # taiko-client (driver mode)
+    "l2_execution_engine": "l2_execution_engine",  # taiko-geth
+    "taiko_client_driver": "taiko_client_driver",  # taiko-client (driver mode)
 }
 
 FRIENDLY_NAMES: dict[str, str] = {
@@ -26,23 +32,18 @@ def get_docker_client() -> docker.DockerClient:
         return docker.from_env()
     except docker.errors.DockerException as e:
         raise RuntimeError(
-            f"Cannot connect to Docker: {e}. "
-            "Ensure Docker is running and the socket is accessible."
+            f"Cannot connect to Docker: {e}. Ensure Docker is running and the socket is accessible."
         ) from e
 
 
-def find_container(
-    client: docker.DockerClient, service: str
-) -> Optional[docker.models.containers.Container]:
+def find_container(client: docker.DockerClient, service: str) -> Optional[docker.models.containers.Container]:
     """Find a running container by its Docker Compose service label."""
     label_value = SERVICES.get(service)
     if label_value is None:
         valid = ", ".join(SERVICES.keys())
         raise ValueError(f"Unknown service '{service}'. Valid: {valid}, all")
 
-    containers = client.containers.list(
-        filters={"label": f"com.docker.compose.service={label_value}"}
-    )
+    containers = client.containers.list(filters={"label": f"com.docker.compose.service={label_value}"})
     return containers[0] if containers else None
 
 
@@ -82,12 +83,14 @@ async def restart_service_async(service: str) -> dict:
 
         await loop.run_in_executor(None, container.restart, 10)
         container.reload()
-        results.append({
-            "service": svc,
-            "friendly_name": FRIENDLY_NAMES.get(svc, svc),
-            "status": container.status,
-            "warning": "Service interrupted — block production paused during restart",
-        })
+        results.append(
+            {
+                "service": svc,
+                "friendly_name": FRIENDLY_NAMES.get(svc, svc),
+                "status": container.status,
+                "warning": "Service interrupted — block production paused during restart",
+            }
+        )
 
     return {"results": results}
 
@@ -107,10 +110,7 @@ def get_logs(
     text = raw.decode("utf-8", errors="replace")
 
     if filter_text:
-        filtered = [
-            line for line in text.splitlines()
-            if filter_text.lower() in line.lower()
-        ]
+        filtered = [line for line in text.splitlines() if filter_text.lower() in line.lower()]
         text = "\n".join(filtered)
 
     friendly = FRIENDLY_NAMES.get(service, service)

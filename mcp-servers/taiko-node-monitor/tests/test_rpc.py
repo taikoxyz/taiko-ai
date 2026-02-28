@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
 from taiko_node_monitor.rpc import (
+    get_l1_block_number,
     get_node_health_data,
     get_sync_data,
-    get_l1_block_number,
     rpc_call,
 )
 
@@ -56,10 +57,10 @@ async def test_rpc_call_error_raises():
 async def test_get_node_health_data_mainnet():
     """get_node_health_data returns correct structure and 'mainnet' network name."""
     rpc_responses: dict[str, object] = {
-        "eth_chainId": "0x28c58",          # 167000 = mainnet
-        "eth_blockNumber": "0x44B820",     # 4503584
+        "eth_chainId": "0x28c58",  # 167000 = mainnet
+        "eth_blockNumber": "0x44B820",  # 4503584
         "eth_syncing": False,
-        "net_peerCount": "0x12",           # 18 peers
+        "net_peerCount": "0x12",  # 18 peers
         "web3_clientVersion": "taiko-geth/v1.17.4",
         "taiko_headL1Origin": {"l1BlockHeight": 22000000, "blockID": 4503584},
     }
@@ -82,7 +83,7 @@ async def test_get_node_health_data_mainnet():
 async def test_get_node_health_data_hoodi():
     """get_node_health_data identifies Hoodi testnet by chain ID 167013."""
     rpc_responses: dict[str, object] = {
-        "eth_chainId": "0x28c65",          # 167013 = Hoodi
+        "eth_chainId": "0x28c65",  # 167013 = Hoodi
         "eth_blockNumber": "0x1000",
         "eth_syncing": False,
         "net_peerCount": "0x3",
@@ -123,8 +124,8 @@ async def test_get_sync_data_syncing_calculates_percentage():
     async def mock_rpc(url: str, method: str, params=None) -> object:
         if method == "eth_syncing":
             return {
-                "currentBlock": "0x3D0900",   # 4000000
-                "highestBlock": "0x44B820",   # 4503584
+                "currentBlock": "0x3D0900",  # 4000000
+                "highestBlock": "0x44B820",  # 4503584
             }
         return None
 

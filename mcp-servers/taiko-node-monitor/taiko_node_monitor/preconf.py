@@ -2,22 +2,25 @@
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
 # Keys from simple-taiko-node .env that are safe to expose to the LLM
-SAFE_ENV_KEYS: frozenset[str] = frozenset({
-    "ENABLE_PRECONFS_P2P",
-    "PUBLIC_IP",
-    "P2P_TCP_PORT",
-    "P2P_UDP_PORT",
-    "COMPOSE_PROFILES",
-    "PROVER_STARTING_BLOCK_ID",
-    "DISABLE_P2P_SYNC",
-    "CHAIN_ID",
-    "MAXPEERS",
-    "VERBOSITY",
-})
+SAFE_ENV_KEYS: frozenset[str] = frozenset(
+    {
+        "ENABLE_PRECONFS_P2P",
+        "PUBLIC_IP",
+        "P2P_TCP_PORT",
+        "P2P_UDP_PORT",
+        "COMPOSE_PROFILES",
+        "PROVER_STARTING_BLOCK_ID",
+        "DISABLE_P2P_SYNC",
+        "CHAIN_ID",
+        "MAXPEERS",
+        "VERBOSITY",
+    }
+)
 
 # Never expose keys matching these patterns (private keys, secrets, endpoints)
 SENSITIVE_PATTERNS = re.compile(
@@ -67,8 +70,13 @@ def get_preconf_status(compose_dir: str, log_text: str = "") -> dict:
 
     peer_count = parse_preconf_peer_count(log_text)
 
-    # Mainnet needs more peers than Hoodi testnet
-    min_peers = 6 if chain_id == 167000 else 3
+    # Mainnet needs more peers than Hoodi testnet (configurable via env)
+    min_peers = int(
+        os.environ.get(
+            "TAIKO_MIN_PEERS_MAINNET" if chain_id == 167000 else "TAIKO_MIN_PEERS_TESTNET",
+            "6" if chain_id == 167000 else "3",
+        )
+    )
 
     peer_health: str
     if peer_count is None:

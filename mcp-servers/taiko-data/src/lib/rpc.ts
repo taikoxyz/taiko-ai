@@ -13,11 +13,7 @@ export function getProvider(network: Network): ethers.JsonRpcProvider {
 }
 
 /** Call a Taiko-specific JSON-RPC method directly */
-export async function taikoRpcCall<T>(
-  network: Network,
-  method: string,
-  params: unknown[] = [],
-): Promise<T> {
+export async function taikoRpcCall<T>(network: Network, method: string, params: unknown[] = []): Promise<T> {
   const rpc = NETWORKS[network].rpc;
   const res = await globalThis.fetch(rpc, {
     method: "POST",

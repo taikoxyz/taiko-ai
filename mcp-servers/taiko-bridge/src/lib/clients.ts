@@ -13,9 +13,7 @@ import { BRIDGE_CONTRACTS, type TaikoNetwork, type BridgeDirection } from "../ne
 /** Resolve the signing private key for a given network. */
 export function resolvePrivateKey(network: TaikoNetwork): `0x${string}` {
   const networkKey =
-    network === "mainnet"
-      ? process.env.TAIKO_MAINNET_PRIVATE_KEY
-      : process.env.TAIKO_HOODI_PRIVATE_KEY;
+    network === "mainnet" ? process.env.TAIKO_MAINNET_PRIVATE_KEY : process.env.TAIKO_HOODI_PRIVATE_KEY;
 
   const key = networkKey ?? process.env.TAIKO_PRIVATE_KEY;
   if (!key) {
@@ -36,10 +34,7 @@ export function resolveChain(network: TaikoNetwork, direction: BridgeDirection):
 }
 
 /** Get the bridge contract address for the source chain. */
-export function resolveBridgeAddress(
-  network: TaikoNetwork,
-  direction: BridgeDirection
-): `0x${string}` {
+export function resolveBridgeAddress(network: TaikoNetwork, direction: BridgeDirection): `0x${string}` {
   const contracts = BRIDGE_CONTRACTS[network];
   return direction === "L1_TO_L2" ? contracts.l1Bridge : contracts.l2Bridge;
 }

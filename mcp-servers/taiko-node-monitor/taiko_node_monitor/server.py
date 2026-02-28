@@ -11,9 +11,7 @@ from .docker_ops import (
     SERVICES,
     get_all_logs,
     get_logs,
-    get_service_status,
     restart_service_async,
-    get_docker_client,
 )
 from .preconf import get_preconf_status
 from .rpc import get_l1_block_number, get_node_health_data, get_sync_data, rpc_call

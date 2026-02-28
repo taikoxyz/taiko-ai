@@ -2,9 +2,9 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { execFile } from "child_process";
 import { promisify } from "util";
-import { mkdtemp, writeFile, rm } from "fs/promises";
+import { mkdtemp, writeFile, mkdir, rm } from "fs/promises";
 import { tmpdir } from "os";
-import { join } from "path";
+import { join, dirname } from "path";
 import { TaikoscanClient } from "@taikoxyz/taiko-api-client";
 import { type Network } from "@taikoxyz/taiko-api-client";
 
@@ -33,16 +33,13 @@ async function isSlitherAvailable(): Promise<boolean> {
  * Returns parsed JSON output.
  */
 async function runSlither(
-  sourceCode: string,
-  tmpDir: string
+  target: string
 ): Promise<{ detectors: Array<{ check: string; impact: string; confidence: string; description: string }> }> {
   const slitherPath = process.env.SLITHER_PATH ?? "slither";
-  const srcFile = join(tmpDir, "contract.sol");
-  await writeFile(srcFile, sourceCode, "utf-8");
 
   const { stdout } = await execFileAsync(
     slitherPath,
-    [srcFile, "--json", "-"],
+    [target, "--json", "-"],
     { timeout: 120_000 } // 2 minute timeout
   );
 
@@ -121,25 +118,37 @@ export function registerAnalyzeTools(server: McpServer): void {
       }
 
       const sourceEntry = sourceRaw[0];
-      let sourceCode = sourceEntry.SourceCode;
-      // Handle multi-file contracts (Etherscan format wraps in {{ }})
-      if (sourceCode.startsWith("{{")) {
-        try {
-          const parsed = JSON.parse(sourceCode.slice(1, -1)) as {
-            sources: Record<string, { content: string }>;
-          };
-          // Use the main contract file (first one)
-          const firstFile = Object.values(parsed.sources)[0];
-          sourceCode = firstFile?.content ?? sourceCode;
-        } catch {
-          // Keep raw source if parsing fails
-        }
-      }
+      const sourceCode = sourceEntry.SourceCode;
 
       // Run Slither in a temp directory
       const tmpDir = await mkdtemp(join(tmpdir(), "taiko-explorer-"));
       try {
-        const analysis = await runSlither(sourceCode, tmpDir);
+        let slitherTarget: string;
+
+        // Handle multi-file contracts (Etherscan format wraps in {{ }})
+        if (sourceCode.startsWith("{{")) {
+          try {
+            const parsed = JSON.parse(sourceCode.slice(1, -1)) as {
+              sources: Record<string, { content: string }>;
+            };
+            // Write ALL source files so Slither can resolve cross-file imports
+            for (const [filePath, source] of Object.entries(parsed.sources)) {
+              const fullPath = join(tmpDir, filePath);
+              await mkdir(dirname(fullPath), { recursive: true });
+              await writeFile(fullPath, source.content, "utf-8");
+            }
+            slitherTarget = tmpDir;
+          } catch {
+            // Parsing failed — write as single file
+            slitherTarget = join(tmpDir, "contract.sol");
+            await writeFile(slitherTarget, sourceCode, "utf-8");
+          }
+        } else {
+          slitherTarget = join(tmpDir, "contract.sol");
+          await writeFile(slitherTarget, sourceCode, "utf-8");
+        }
+
+        const analysis = await runSlither(slitherTarget);
 
         const findings = analysis.detectors.map((d) => ({
           check: d.check,

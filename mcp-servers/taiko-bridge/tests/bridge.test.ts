@@ -5,9 +5,7 @@ import { parseEther, isAddress } from "viem";
 
 describe("ABIs and status utilities", () => {
   it("MESSAGE_STATUS_LABELS has 5 entries matching IBridge.Status enum", async () => {
-    const { MESSAGE_STATUS_LABELS, statusToLabel } = await import(
-      "../src/lib/abis.js"
-    );
+    const { MESSAGE_STATUS_LABELS, statusToLabel } = await import("../src/lib/abis.js");
     expect(MESSAGE_STATUS_LABELS).toHaveLength(5);
     expect(MESSAGE_STATUS_LABELS[0]).toBe("NEW");
     expect(MESSAGE_STATUS_LABELS[1]).toBe("RETRIABLE");
@@ -42,7 +40,8 @@ describe("ABIs and status utilities", () => {
   it("sendMessage ABI has correct Message struct components", async () => {
     const { IBridgeABI } = await import("../src/lib/abis.js");
     const sendMessage = IBridgeABI.find((f: { name: string }) => f.name === "sendMessage")!;
-    const inputComponents = (sendMessage as { inputs: Array<{ components: Array<{ name: string }> }> }).inputs[0].components;
+    const inputComponents = (sendMessage as { inputs: Array<{ components: Array<{ name: string }> }> }).inputs[0]
+      .components;
     const fieldNames = inputComponents.map((c) => c.name);
     expect(fieldNames).toContain("fee");
     expect(fieldNames).toContain("gasLimit");
@@ -56,23 +55,15 @@ describe("Network configuration", () => {
   it("BRIDGE_CONTRACTS has correct L1 bridge addresses", async () => {
     const { BRIDGE_CONTRACTS } = await import("../src/networks.js");
     // L1 Bridge addresses confirmed from taikoxyz/taiko-mono deployment logs
-    expect(BRIDGE_CONTRACTS.mainnet.l1Bridge).toBe(
-      "0xd60247c6848B7Ca29eDdF63AA924E53dB6Ddd8EC"
-    );
-    expect(BRIDGE_CONTRACTS.hoodi.l1Bridge).toBe(
-      "0x6a4cf607DaC2C4784B7D934Bcb3AD7F2ED18Ed80"
-    );
+    expect(BRIDGE_CONTRACTS.mainnet.l1Bridge).toBe("0xd60247c6848B7Ca29eDdF63AA924E53dB6Ddd8EC");
+    expect(BRIDGE_CONTRACTS.hoodi.l1Bridge).toBe("0x6a4cf607DaC2C4784B7D934Bcb3AD7F2ED18Ed80");
   });
 
   it("BRIDGE_CONTRACTS has correct L2 bridge addresses from NETWORKS constants", async () => {
     const { BRIDGE_CONTRACTS } = await import("../src/networks.js");
     // These come from @taikoxyz/taiko-api-client NETWORKS
-    expect(BRIDGE_CONTRACTS.mainnet.l2Bridge).toBe(
-      "0x1670000000000000000000000000000000000001"
-    );
-    expect(BRIDGE_CONTRACTS.hoodi.l2Bridge).toBe(
-      "0x167D000000000000000000000000000000000001"
-    );
+    expect(BRIDGE_CONTRACTS.mainnet.l2Bridge).toBe("0x1670000000000000000000000000000000000001");
+    expect(BRIDGE_CONTRACTS.hoodi.l2Bridge).toBe("0x1670130000000000000000000000000000000001");
   });
 
   it("taikoMainnet chain has correct id", async () => {
