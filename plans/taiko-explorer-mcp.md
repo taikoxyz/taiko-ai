@@ -1,7 +1,16 @@
 # taiko-explorer MCP — Implementation Plan
 
 ## Status
-[ ] Not started
+[x] Implemented — 18/18 tests pass
+
+### Key implementation notes
+- Built from scratch (consistent patterns with taiko-bridge/taiko-data, not forked from mcp-etherscan-server)
+- `BlockscoutClient.getSimilarContracts` → `/smart-contracts/{addr}/similar` returns 404 on Taiko Blockscout; handled gracefully with informative error
+- `BlockscoutClient.getAddressCounters` → `/addresses/{addr}/counters` works correctly on Taiko Blockscout
+- Opcode scanner skips PUSH immediate bytes to avoid false positives — critical for correctness
+- PUSH0 (0x5F) is NOT blocked — Shanghai added it; only Cancun+ opcodes are blocked
+- `analyze_contract` requires Slither installed locally; returns clear error if not available
+- 9 tools shipped (more than planned): get_contract_creator, get_contract_abi, get_contract_source, decode_calldata, check_taiko_compatibility, check_bytecode_compatibility, get_contract_metrics, get_similar_contracts, get_smart_contract_info, analyze_contract
 
 ## Summary
 
