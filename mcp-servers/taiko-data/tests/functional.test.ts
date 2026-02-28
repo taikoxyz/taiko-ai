@@ -101,13 +101,17 @@ describe("Taikoscan tools (Etherscan V2 API key required)", () => {
   );
 
   it.skipIf(!hasApiKey)(
-    "get_gas_price returns gas oracle data",
+    "get_gas_price: gastracker returns null (not supported on Taiko), RPC fee data works",
     async () => {
       const taikoscan = new TaikoscanClient(process.env.TAIKOSCAN_API_KEY);
+      // gastracker module is not available on Taiko — should return null gracefully
       const oracle = await taikoscan.getGasOracle("mainnet");
-      expect(oracle.SafeGasPrice).toBeDefined();
-      expect(oracle.FastGasPrice).toBeDefined();
-      expect(parseInt(oracle.LastBlock)).toBeGreaterThan(0);
+      expect(oracle).toBeNull();
+      // Verify RPC-based fee data works as fallback
+      const provider = getProvider("mainnet");
+      const feeData = await provider.getFeeData();
+      expect(feeData.gasPrice).not.toBeNull();
+      expect(feeData.gasPrice!).toBeGreaterThan(0n);
     },
     15_000,
   );

@@ -177,11 +177,16 @@ export class TaikoscanClient {
     return result.filter((t) => t.tokenType === type);
   }
 
-  async getGasOracle(network: Network = "mainnet"): Promise<GasOracle> {
-    return this.fetch<GasOracle>(network, {
-      module: "gastracker",
-      action: "gasoracle",
-    });
+  async getGasOracle(network: Network = "mainnet"): Promise<GasOracle | null> {
+    try {
+      return await this.fetch<GasOracle>(network, {
+        module: "gastracker",
+        action: "gasoracle",
+      });
+    } catch {
+      // gastracker module is not available on all chains (Taiko uses RPC-based gas estimation)
+      return null;
+    }
   }
 
   async getTransactionByHash(hash: string, network: Network = "mainnet"): Promise<unknown> {
