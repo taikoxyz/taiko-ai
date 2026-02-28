@@ -159,9 +159,7 @@ export function registerAnalyzeTools(server: McpServer): void {
 
         // Sort by impact priority and cap for token efficiency
         const IMPACT_ORDER: Record<string, number> = { High: 0, Medium: 1, Low: 2, Informational: 3 };
-        const sorted = findings.sort(
-          (a, b) => (IMPACT_ORDER[a.impact] ?? 4) - (IMPACT_ORDER[b.impact] ?? 4)
-        );
+        const sorted = findings.sort((a, b) => (IMPACT_ORDER[a.impact] ?? 4) - (IMPACT_ORDER[b.impact] ?? 4));
         const MAX_FINDINGS = 20;
         const capped = sorted.slice(0, MAX_FINDINGS);
         const cappedFindings = capped.map((f) => ({

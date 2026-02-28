@@ -97,21 +97,13 @@ export function truncateHex(hex: string, maxBytes = 256): string {
 // ── Transaction field stripping ───────────────────────────────────────────────
 
 /** Fields that rarely matter for LLM analysis. */
-const LOW_VALUE_TX_FIELDS = new Set([
-  "blockHash",
-  "cumulativeGasUsed",
-  "confirmations",
-  "transactionIndex",
-]);
+const LOW_VALUE_TX_FIELDS = new Set(["blockHash", "cumulativeGasUsed", "confirmations", "transactionIndex"]);
 
 /**
  * Strip low-value fields and truncate `input` on a raw Etherscan-style
  * transaction object.  Returns a new object (does not mutate the original).
  */
-export function compactTransaction(
-  tx: Record<string, unknown>,
-  inputMaxBytes = 256
-): Record<string, unknown> {
+export function compactTransaction(tx: Record<string, unknown>, inputMaxBytes = 256): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(tx)) {
     if (LOW_VALUE_TX_FIELDS.has(k)) continue;

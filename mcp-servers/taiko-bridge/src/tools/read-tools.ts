@@ -154,13 +154,7 @@ export function registerReadTools(server: McpServer): void {
     {
       address: z.string().describe("Ethereum address (0x-prefixed)"),
       network: networkParam,
-      limit: z
-        .number()
-        .int()
-        .min(1)
-        .max(100)
-        .default(20)
-        .describe("Maximum pending messages to return"),
+      limit: z.number().int().min(1).max(100).default(20).describe("Maximum pending messages to return"),
     },
     async ({ address, network, limit }) => {
       const net = network as TaikoNetwork;

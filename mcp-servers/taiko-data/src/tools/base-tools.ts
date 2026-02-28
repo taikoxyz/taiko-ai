@@ -48,7 +48,13 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
         content: [
           {
             type: "text",
-            text: JSON.stringify({ address, network, page, count: txs.length, transactions: txs.map((tx) => compactTransaction(tx as unknown as Record<string, unknown>)) }),
+            text: JSON.stringify({
+              address,
+              network,
+              page,
+              count: txs.length,
+              transactions: txs.map((tx) => compactTransaction(tx as unknown as Record<string, unknown>)),
+            }),
           },
         ],
       };
@@ -210,7 +216,13 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
         content: [
           {
             type: "text",
-            text: JSON.stringify({ address, network, page, count: transfers.length, transfers: transfers.map((t) => compactTransaction(t as unknown as Record<string, unknown>)) }),
+            text: JSON.stringify({
+              address,
+              network,
+              page,
+              count: transfers.length,
+              transfers: transfers.map((t) => compactTransaction(t as unknown as Record<string, unknown>)),
+            }),
           },
         ],
       };
@@ -341,7 +353,13 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
         content: [
           {
             type: "text",
-            text: JSON.stringify({ address, network, count: result.length, truncated: logs.length > limit, logs: result }),
+            text: JSON.stringify({
+              address,
+              network,
+              count: result.length,
+              truncated: logs.length > limit,
+              logs: result,
+            }),
           },
         ],
       };

@@ -65,10 +65,7 @@ export function registerAbiTools(server: McpServer): void {
     {
       address: z.string().describe("Contract address (0x-prefixed)"),
       network: networkParam,
-      raw: z
-        .boolean()
-        .default(false)
-        .describe("Return full ABI JSON instead of summarized signatures"),
+      raw: z.boolean().default(false).describe("Return full ABI JSON instead of summarized signatures"),
     },
     async ({ address, network, raw }) => {
       const taikoscan = new TaikoscanClient();
@@ -100,12 +97,7 @@ export function registerAbiTools(server: McpServer): void {
     {
       address: z.string().describe("Contract address (0x-prefixed)"),
       network: networkParam,
-      max_length: z
-        .number()
-        .int()
-        .min(100)
-        .default(8192)
-        .describe("Maximum characters of source code to return"),
+      max_length: z.number().int().min(100).default(8192).describe("Maximum characters of source code to return"),
     },
     async ({ address, network, max_length }) => {
       const taikoscan = new TaikoscanClient();

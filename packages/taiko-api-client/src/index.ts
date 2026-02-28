@@ -30,10 +30,4 @@ export {
   type MessageStatus,
   type MessageStatusName,
 } from "./relayer.js";
-export {
-  summarizeAbi,
-  truncateHex,
-  compactTransaction,
-  type AbiSummary,
-  type AbiEntry,
-} from "./token-utils.js";
+export { summarizeAbi, truncateHex, compactTransaction, type AbiSummary, type AbiEntry } from "./token-utils.js";
