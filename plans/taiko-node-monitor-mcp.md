@@ -1,7 +1,12 @@
 # taiko-node-monitor MCP — Implementation Plan
 
 ## Status
-[ ] Not started
+[x] Implemented — `mcp-servers/taiko-node-monitor/`, 28/28 tests pass
+
+**Key findings from docker-compose.yml:**
+- Service names: `l2_execution_engine` (taiko-geth), `taiko_client_driver` (taiko-client driver)
+- Default HTTP RPC: `PORT_L2_EXECUTION_ENGINE_HTTP=8547` ✓ (plan was correct)
+- `taiko_l1OriginHeight` not used — `taiko_headL1Origin.l1BlockHeight` used instead (confirmed working)
 
 ## Summary
 
