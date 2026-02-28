@@ -40,3 +40,10 @@ lcov.info
 
 # Research / working notes
 research.md
+
+# Cloudflare
+.wrangler/
+
+# npm workspace artifacts
+packages/*/node_modules/
+mcp-servers/*/node_modules/

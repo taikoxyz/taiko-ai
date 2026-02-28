@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build workspaces
+        run: npm -ws run build
+
+      - name: Test TypeScript workspaces
+        run: npm -ws run test
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install node-monitor test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "mcp-servers/taiko-node-monitor[dev]"
+
+      - name: Test node-monitor (Python)
+        run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q -p pytest_asyncio.plugin mcp-servers/taiko-node-monitor/tests

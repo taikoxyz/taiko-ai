@@ -1,5 +1,17 @@
 {
   "name": "taiko-ai",
   "version": "1.4.0",
-  "private": false
+  "private": true,
+  "workspaces": [
+    "mcp-servers/*",
+    "packages/*",
+    "cli"
+  ],
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.4.0"
+  }
 }

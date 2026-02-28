@@ -1,9 +1,18 @@
 ---
 name: taiko-x402
-description: Build and integrate x402 HTTP payment flows on Taiko using Taiko-operated facilitators. Use when adding per-request USDC payment gating to APIs deployed on Taiko (seller), building AI agents or clients that autonomously pay for x402 services (buyer), or configuring Taiko facilitators. Triggers: "x402", "HTTP payment", "pay per request", "monetize API", "USDC payment", "402 Payment Required", "facilitator.taiko.xyz", "paid API", "AI agent payments", "payment middleware".
+description: >
+  Build and integrate x402 HTTP payment flows on Taiko using Taiko-operated
+  facilitators. Use when adding per-request USDC payment gating to APIs
+  deployed on Taiko (seller), building AI agents or clients that autonomously
+  pay for x402 services (buyer), or configuring Taiko facilitators. Triggers:
+  "x402", "HTTP payment", "pay per request", "monetize API", "USDC payment",
+  "402 Payment Required", "facilitator.taiko.xyz", "paid API",
+  "AI agent payments", "payment middleware".
 ---
 
 # x402 Payments on Taiko
+
+> **Network Selection:** If the user has not specified "hoodi" or "mainnet", always ask which network to use before proceeding.
 
 x402 is an open HTTP payment protocol: a server responds `402 Payment Required` with a price; a client signs an EIP-712 USDC authorization and retries. No accounts, sessions, or subscriptions needed — payment is the authentication.
 
@@ -43,6 +52,7 @@ No CDP API key required — Taiko facilitators are independent of Coinbase's CDP
 | `Invalid signature` | Signer address doesn't match `from` in EIP-712 payload |
 | `Token not supported` | Use the USDC contract address listed in [facilitators reference](./references/facilitators.md) |
 | 402 on every request | Middleware misconfigured — check route pattern and `payTo` address |
+| `No default asset configured for network` | Use `price` as `{ amount, asset }` with the verified USDC token address for that Taiko network |
 
 ## References
 

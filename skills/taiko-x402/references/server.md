@@ -28,6 +28,7 @@ import { HTTPFacilitatorClient } from "@x402/core/server";
 
 const app = express();
 const payTo = process.env.WALLET_ADDRESS!;
+const usdcAddress = process.env.USDC_ADDRESS!;
 
 const facilitatorClient = new HTTPFacilitatorClient({
   url: "https://facilitator.taiko.xyz",
@@ -44,7 +45,7 @@ app.use(
         accepts: [
           {
             scheme: "exact",
-            price: "$0.001",
+            price: { amount: "1000", asset: usdcAddress },
             network: "eip155:167013",
             payTo,
           },
@@ -63,6 +64,8 @@ app.get("/api/data", (req, res) => {
 
 app.listen(3000);
 ```
+
+Set `USDC_ADDRESS` to the network's USDC token contract from Taikoscan/Blockscout. Some x402 server versions do not provide a default asset for Taiko networks, so use `price` as an `{ amount, asset }` object to avoid 500 errors.
 
 ## Next.js (middleware.ts)
 
@@ -97,7 +100,12 @@ server.register("eip155:167013", ExactEvmServerScheme())
 
 routes = {
     "GET /api/data": RouteConfig(
-        accepts=[PaymentOption(scheme="exact", pay_to=pay_to, price="$0.001", network="eip155:167013")],
+        accepts=[PaymentOption(
+            scheme="exact",
+            pay_to=pay_to,
+            price={"amount": "1000", "asset": os.getenv("USDC_ADDRESS")},
+            network="eip155:167013",
+        )],
         mime_type="application/json",
         description="Returns data",
     ),
@@ -115,10 +123,12 @@ async def get_data():
 interface RouteConfig {
   accepts: Array<{
     scheme: "exact";
-    price: string;      // "$0.001" or atomic units "1000"
+    price: {            // preferred on Taiko
+      amount: string;   // atomic token amount, e.g. "1000" for 0.001 USDC
+      asset: string;    // USDC token contract address
+    } | string;         // string price needs a default asset parser for the network
     network: string;    // CAIP-2: "eip155:167000" or "eip155:167013"
     payTo: string;      // your EVM wallet address
-    asset?: string;     // USDC contract address (optional, facilitator default)
   }>;
   description?: string;
   mimeType?: string;
@@ -133,8 +143,8 @@ interface RouteConfig {
 ```typescript
 "GET /api/data": {
   accepts: [
-    { scheme: "exact", price: "$0.001", network: "eip155:167000", payTo },  // Mainnet
-    { scheme: "exact", price: "$0.001", network: "eip155:167013", payTo },  // Hoodi
+    { scheme: "exact", price: { amount: "1000", asset: mainnetUsdc }, network: "eip155:167000", payTo },  // Mainnet
+    { scheme: "exact", price: { amount: "1000", asset: hoodiUsdc }, network: "eip155:167013", payTo },    // Hoodi
   ],
   description: "Data endpoint accepting payments from both networks",
 },
