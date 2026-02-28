@@ -127,7 +127,7 @@ export const NETWORKS = {
     taikoscanApi: "https://api.hoodi.taikoscan.io/api",
     blockscout: "https://blockscoutapi.hoodi.taiko.xyz/api/v2",
     relayer: "https://relayer.hoodi.taiko.xyz",
-    bridge: "0x167D000000000000000000000000000000000001",
+    bridge: "0x1670130000000000000000000000000000000001",
     anchor: "0x1670000000000000000000000000000000010001",
   },
 } as const;
@@ -270,5 +270,5 @@ Fork `crazyrabbitLTC/mcp-ethers-server` (MIT, TypeScript, 40+ tools). Setting `E
 ### Contract Addresses
 - TaikoAnchor (L2, both networks): `0x1670000000000000000000000000000000010001`
 - Bridge (Mainnet L2): `0x1670000000000000000000000000000000000001`
-- Bridge (Hoodi L2): `0x167D000000000000000000000000000000000001`
+- Bridge (Hoodi L2): `0x1670130000000000000000000000000000000001`
 - GOLDEN_TOUCH_ADDRESS: `0x0000777735367b36bC9B61C50022d9D0700dB4Ec`

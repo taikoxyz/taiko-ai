@@ -294,25 +294,34 @@ export function registerBaseTools(server: McpServer, taikoscan: TaikoscanClient)
     {
       address: z.string().describe("Contract address"),
       event_signature: z.string().optional().describe("Event signature like 'Transfer(address,address,uint256)'"),
-      from_block: z.number().int().optional().describe("Start block number"),
-      to_block: z.number().int().optional().describe("End block number (default: latest)"),
+      from_block: z.number().int().nonnegative().optional().describe("Start block number"),
+      to_block: z.number().int().nonnegative().optional().describe("End block number (default: latest)"),
       network: networkParam,
     },
     async ({ address, event_signature, from_block, to_block, network }) => {
+      const provider = getProvider(network);
+
       // Cap block range to prevent RPC timeout / OOM (most providers cap at 2k-10k blocks)
       const MAX_BLOCK_RANGE = 10_000;
-      if (from_block !== undefined && to_block !== undefined && to_block - from_block > MAX_BLOCK_RANGE) {
+      const latestBlock = to_block ?? (await provider.getBlockNumber());
+      const startBlock = from_block ?? latestBlock;
+      const range = latestBlock - startBlock;
+
+      if (range < 0) {
+        throw new Error(`Invalid block range: from_block (${startBlock}) is greater than to_block (${latestBlock}).`);
+      }
+
+      if (range > MAX_BLOCK_RANGE) {
         throw new Error(
-          `Block range ${to_block - from_block} exceeds maximum of ${MAX_BLOCK_RANGE}. ` +
+          `Block range ${range} exceeds maximum of ${MAX_BLOCK_RANGE}. ` +
             `Use a narrower range or paginate with multiple calls.`
         );
       }
 
-      const provider = getProvider(network);
       const filter: ethers.Filter = {
         address,
-        fromBlock: from_block ?? "latest",
-        toBlock: to_block ?? "latest",
+        fromBlock: startBlock,
+        toBlock: latestBlock,
       };
       if (event_signature) {
         filter.topics = [ethers.id(event_signature)];

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ethers } from "ethers";
 import { z } from "zod";
-import { TaikoscanClient, BlockscoutClient, RelayerClient } from "@taikoxyz/taiko-api-client";
+import { TaikoscanClient, BlockscoutClient, RelayerClient, statusToString } from "@taikoxyz/taiko-api-client";
 import { getProvider, getHeadL1Origin } from "../lib/rpc.js";
 import { NETWORKS, type Network } from "../networks.js";
 
@@ -146,10 +146,10 @@ export function registerTaikoTools(
     },
     async ({ msg_hash, network }) => {
       // Try relayer API first
-      const status = await relayer.getMessageStatus(msg_hash, network);
+      const details = await relayer.getMessageStatusDetails(msg_hash, network);
 
-      if (status) {
-        const event = await relayer.getEventByMsgHash(msg_hash, network);
+      if (details) {
+        const event = details.event;
         return {
           content: [
             {
@@ -157,7 +157,8 @@ export function registerTaikoTools(
               text: JSON.stringify({
                 network,
                 msgHash: msg_hash,
-                status,
+                status: details.status,
+                statusCode: details.statusCode,
                 source: "relayer_api",
                 event: event
                   ? {
@@ -180,10 +181,9 @@ export function registerTaikoTools(
       const provider = getProvider(network);
       const bridgeAddress = NETWORKS[network].bridge as string;
       const bridge = new ethers.Contract(bridgeAddress, BRIDGE_STATUS_ABI, provider);
-      const STATUS_NAMES = ["NEW", "RETRIABLE", "DONE", "FAILED", "RECALLED"];
       try {
         const statusNum = (await bridge.messageStatus(msg_hash)) as bigint;
-        const statusName = STATUS_NAMES[Number(statusNum)] ?? "UNKNOWN";
+        const statusName = statusToString(Number(statusNum));
         return {
           content: [
             {

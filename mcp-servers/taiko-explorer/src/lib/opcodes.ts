@@ -1,20 +1,33 @@
-/**
- * Blocked opcodes on Taiko's Shanghai EVM.
- * Taiko runs Shanghai (not Cancun/Prague) until the Gwyneth upgrade.
- * PUSH0 (0x5F) IS available — Shanghai added it.
- *
- * MAINTENANCE: Update this list when Taiko upgrades its EVM version.
- * After Gwyneth (Cancun support), remove TLOAD/TSTORE/MCOPY/BLOBHASH/BLOBBASEFEE.
- * After Pectra support, review for any new opcodes.
- * Track: https://github.com/taikoxyz/taiko-mono for EVM upgrade announcements.
- */
-export const BLOCKED_OPCODES: Record<number, string> = {
-  0x5c: "TLOAD", // EIP-1153 transient storage load (Cancun)
-  0x5d: "TSTORE", // EIP-1153 transient storage store (Cancun)
-  0x5e: "MCOPY", // EIP-5656 memory copy (Cancun)
-  0x49: "BLOBHASH", // EIP-4844 blob hash (Cancun)
-  0x4a: "BLOBBASEFEE", // EIP-7516 blob base fee (Cancun)
+export type TaikoEvmVersion = "shanghai" | "cancun" | "pectra";
+
+const BLOCKED_OPCODES_BY_VERSION: Record<TaikoEvmVersion, Record<number, string>> = {
+  shanghai: {
+    0x5c: "TLOAD", // EIP-1153 transient storage load (Cancun)
+    0x5d: "TSTORE", // EIP-1153 transient storage store (Cancun)
+    0x5e: "MCOPY", // EIP-5656 memory copy (Cancun)
+    0x49: "BLOBHASH", // EIP-4844 blob hash (Cancun)
+    0x4a: "BLOBBASEFEE", // EIP-7516 blob base fee (Cancun)
+  },
+  // Cancun/Pectra enable these opcodes, so no blocked list entries by default.
+  cancun: {},
+  pectra: {},
 };
+
+/**
+ * Legacy default blocked opcode list for Taiko's current Shanghai EVM.
+ * Use getBlockedOpcodes(...) for version-aware behavior.
+ */
+export const BLOCKED_OPCODES = BLOCKED_OPCODES_BY_VERSION.shanghai;
+
+export function getConfiguredEvmVersion(): TaikoEvmVersion {
+  const raw = (process.env.TAIKO_EVM_VERSION ?? "shanghai").toLowerCase();
+  if (raw === "cancun" || raw === "pectra" || raw === "shanghai") return raw;
+  return "shanghai";
+}
+
+export function getBlockedOpcodes(evmVersion: TaikoEvmVersion = getConfiguredEvmVersion()): Record<number, string> {
+  return { ...BLOCKED_OPCODES_BY_VERSION[evmVersion] };
+}
 
 export interface OpcodeIssue {
   offset: number;
@@ -37,7 +50,10 @@ function getImmediateBytes(opcode: number): number {
  * Correctly skips PUSH immediate data to avoid false positives.
  * @param bytecode - Hex string with or without 0x prefix
  */
-export function scanBlockedOpcodes(bytecode: string): OpcodeIssue[] {
+export function scanBlockedOpcodes(
+  bytecode: string,
+  blockedOpcodes: Record<number, string> = getBlockedOpcodes()
+): OpcodeIssue[] {
   const hex = bytecode.replace(/^0x/i, "");
   if (!hex || hex === "") return [];
 
@@ -47,11 +63,11 @@ export function scanBlockedOpcodes(bytecode: string): OpcodeIssue[] {
 
   while (i < bytes.length) {
     const op = bytes[i];
-    if (op !== undefined && op in BLOCKED_OPCODES) {
+    if (op !== undefined && op in blockedOpcodes) {
       issues.push({
         offset: i,
         opcode: `0x${op.toString(16).padStart(2, "0")}`,
-        name: BLOCKED_OPCODES[op],
+        name: blockedOpcodes[op],
       });
     }
     // Skip PUSH immediate data to avoid false positives from data bytes

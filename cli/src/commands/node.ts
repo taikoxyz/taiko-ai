@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { execSync, spawn } from "child_process";
+import { execSync, spawn, spawnSync } from "child_process";
 import { existsSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
@@ -25,6 +25,26 @@ function dockerCompose(args: string[], composeDir: string): string {
     encoding: "utf8",
     stdio: ["inherit", "pipe", "pipe"],
   });
+}
+
+function dockerComposeCapture(args: string[], composeDir: string): { stdout: string; stderr: string; status: number } {
+  if (!existsSync(composeDir)) {
+    throw new Error(
+      `simple-taiko-node directory not found: ${composeDir}. ` +
+        "Clone it from https://github.com/taikoxyz/simple-taiko-node or set COMPOSE_DIR."
+    );
+  }
+
+  const result = spawnSync("docker", ["compose", ...args], {
+    cwd: composeDir,
+    encoding: "utf8",
+  });
+
+  return {
+    stdout: result.stdout ?? "",
+    stderr: result.stderr ?? "",
+    status: result.status ?? 1,
+  };
 }
 
 export function nodeCommand(program: Command): void {
@@ -179,11 +199,25 @@ export function nodeCommand(program: Command): void {
     .option("--follow", "Follow log output")
     .option("--service <name>", "Service name (l2_execution_engine or taiko_client_driver)")
     .option("--tail <n>", "Number of lines to show from the end (default: 100)")
-    .option("--json", "Output metadata as JSON (log lines always go to stdout)")
+    .option("--json", "Output logs and metadata as JSON (non-follow mode only)")
     .action((opts: { follow?: boolean; service?: string; tail?: string; json?: boolean }) => {
+      const mode: OutputMode = opts.json ? "json" : "human";
       const composeDir = getComposeDir();
+      const config = readConfig();
+      const net = getActiveNetwork(config);
+
       if (!existsSync(composeDir)) {
-        console.error(`simple-taiko-node not found: ${composeDir}`);
+        if (mode === "json") {
+          output(
+            err("node logs", net, [
+              `simple-taiko-node not found: ${composeDir}`,
+              "Set COMPOSE_DIR to your simple-taiko-node directory.",
+            ]),
+            mode
+          );
+        } else {
+          console.error(`simple-taiko-node not found: ${composeDir}`);
+        }
         process.exit(1);
       }
 
@@ -192,12 +226,47 @@ export function nodeCommand(program: Command): void {
       args.push("--tail", opts.tail ?? "100");
       if (opts.service) args.push(opts.service);
 
-      // Stream logs — pass stdio through
+      if (mode === "json") {
+        if (opts.follow) {
+          output(err("node logs", net, ["--follow is not supported with --json mode."]), mode);
+          process.exit(1);
+        }
+
+        try {
+          const result = dockerComposeCapture(args, composeDir);
+          if (result.status !== 0) {
+            output(
+              err("node logs", net, [result.stderr.trim() || `docker compose logs exited with code ${result.status}`], {
+                compose_dir: composeDir,
+                service: opts.service ?? "all",
+                tail: opts.tail ?? "100",
+              }),
+              mode
+            );
+            process.exit(1);
+          }
+
+          output(
+            ok("node logs", net, {
+              compose_dir: composeDir,
+              service: opts.service ?? "all",
+              tail: opts.tail ?? "100",
+              logs: result.stdout,
+            }),
+            mode
+          );
+          return;
+        } catch (e: unknown) {
+          output(err("node logs", net, [e instanceof Error ? e.message : String(e)]), mode);
+          process.exit(1);
+        }
+      }
+
+      // Human mode: stream logs directly.
       const child = spawn("docker", ["compose", ...args], {
         cwd: composeDir,
         stdio: "inherit",
       });
-
       child.on("exit", (code) => {
         process.exit(code ?? 0);
       });

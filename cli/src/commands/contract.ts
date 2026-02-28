@@ -39,7 +39,12 @@ export function contractCommand(program: Command): void {
       ) => {
         const mode: OutputMode = opts.json ? "json" : "human";
         const config = readConfig();
-        const net = (opts.network as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
+        const rawNet = opts.network;
+        if (rawNet !== undefined && rawNet !== "mainnet" && rawNet !== "hoodi") {
+          output(err("contract verify", rawNet, [`Unknown network: "${rawNet}". Use mainnet or hoodi.`]), mode);
+          process.exit(1);
+        }
+        const net = (rawNet as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
         const netConfig = NETWORKS[net];
 
         const apiKey = process.env.TAIKO_ETHERSCAN_API_KEY ?? process.env.ETHERSCAN_API_KEY;
@@ -55,18 +60,13 @@ export function contractCommand(program: Command): void {
           process.exit(1);
         }
 
-        // NOTE: The API key is passed as a CLI argument to forge, which means it is
-        // visible in process listings (e.g. `ps aux`). This is a forge limitation —
-        // forge verify-contract does not support reading the key from stdin or a file.
-        // The key is redacted in human-mode console output below.
+        // Keep API key in child process env (not argv) to avoid leaking via process list.
         const forgeArgs = [
           "verify-contract",
           address,
           contractIdentifier,
           "--chain-id",
           String(netConfig.chainId),
-          "--etherscan-api-key",
-          apiKey,
           "--verifier-url",
           `${netConfig.taikoscanExplorer}/api`,
         ];
@@ -86,11 +86,11 @@ export function contractCommand(program: Command): void {
 
         // Print the command in human mode for transparency
         if (mode === "human") {
-          console.log(`Running: forge ${forgeArgs.filter((a) => a !== apiKey).join(" ")} --etherscan-api-key <hidden>`);
+          console.log(`Running: forge ${forgeArgs.join(" ")} (using ETHERSCAN_API_KEY from environment)`);
         }
 
         try {
-          await runForge(forgeArgs);
+          await runForge(forgeArgs, { ETHERSCAN_API_KEY: apiKey });
           output(
             ok("contract verify", net, {
               address,
@@ -117,9 +117,15 @@ export function contractCommand(program: Command): void {
 }
 
 /** Run `forge <args>` and resolve/reject based on exit code. */
-function runForge(args: string[]): Promise<void> {
+function runForge(args: string[], extraEnv: Record<string, string> = {}): Promise<void> {
   return new Promise((resolve, reject) => {
-    const proc = spawn("forge", args, { stdio: "inherit" });
+    const proc = spawn("forge", args, {
+      stdio: "inherit",
+      env: {
+        ...process.env,
+        ...extraEnv,
+      },
+    });
     proc.on("error", (err) => {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
         reject(new Error("forge not found. Install Foundry: curl -L https://foundry.paradigm.xyz | bash"));

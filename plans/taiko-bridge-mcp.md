@@ -145,9 +145,9 @@ export const BRIDGE_CONTRACTS = {
     l2ERC20Vault: "0x1670000000000000000000000000000000000002" as const,
   },
   hoodi: {
-    l2Bridge: "0x167D000000000000000000000000000000000001" as const,
-    l2SignalService: "0x167D000000000000000000000000000000000005" as const,
-    l2ERC20Vault: "0x167D000000000000000000000000000000000002" as const,
+    l2Bridge: "0x1670130000000000000000000000000000000001" as const,
+    l2SignalService: "0x1670130000000000000000000000000000000005" as const,
+    l2ERC20Vault: "0x1670130000000000000000000000000000000002" as const,
   },
 } as const;
 ```
@@ -312,12 +312,12 @@ EIP-7702 is NOT yet live on Taiko (requires Gwyneth upgrade). Do not implement `
 | Exact Hoodi L2→L1 cooldown duration | Medium | Check Hoodi bridge UI |
 | Relayer API schema for `estimate_bridge_fee` | Medium | Inspect bridge.taiko.xyz DevTools |
 | Does `recall_message` require a merkle proof? | High | Check IBridge source in taiko-mono |
-| ERC-20 Vault address on Hoodi (inferred `0x167D...0002`) | High | Verify from simple-taiko-node or Taikoscan |
+| ERC-20 Vault address on Hoodi (inferred `0x167013...0002`) | High | Verify from simple-taiko-node or Taikoscan |
 
 ### Contract Addresses
 | Contract | Mainnet | Hoodi |
 |----------|---------|-------|
-| Bridge (L2) | `0x1670000000000000000000000000000000000001` | `0x167D000000000000000000000000000000000001` |
-| SignalService (L2) | `0x1670000000000000000000000000000000000005` | `0x167D000000000000000000000000000000000005` |
-| ERC20Vault (L2) | `0x1670000000000000000000000000000000000002` | `0x167D000000000000000000000000000000000002` |
+| Bridge (L2) | `0x1670000000000000000000000000000000000001` | `0x1670130000000000000000000000000000000001` |
+| SignalService (L2) | `0x1670000000000000000000000000000000000005` | `0x1670130000000000000000000000000000000005` |
+| ERC20Vault (L2) | `0x1670000000000000000000000000000000000002` | `0x1670130000000000000000000000000000000002` |
 | TaikoInbox (L1) | `0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a` | TBD |

@@ -129,6 +129,18 @@ describe("BLOCKED_OPCODES", () => {
     const { BLOCKED_OPCODES } = await import("../src/lib/opcodes.js");
     expect(BLOCKED_OPCODES[0x5f]).toBeUndefined();
   });
+
+  it("Cancun mode has no blocked opcode list", async () => {
+    const { getBlockedOpcodes } = await import("../src/lib/opcodes.js");
+    expect(Object.keys(getBlockedOpcodes("cancun"))).toHaveLength(0);
+    expect(Object.keys(getBlockedOpcodes("pectra"))).toHaveLength(0);
+  });
+
+  it("scanBlockedOpcodes can use explicit opcode maps", async () => {
+    const { scanBlockedOpcodes, getBlockedOpcodes } = await import("../src/lib/opcodes.js");
+    expect(scanBlockedOpcodes("0x5c", getBlockedOpcodes("shanghai"))).toHaveLength(1);
+    expect(scanBlockedOpcodes("0x5c", getBlockedOpcodes("cancun"))).toHaveLength(0);
+  });
 });
 
 // ─── Server instantiation ───────────────────────────────────────────────────

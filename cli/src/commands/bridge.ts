@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { RelayerClient } from "@taikoxyz/taiko-api-client";
+import { RelayerClient, normalizeRelayerPageInfo, statusToString } from "@taikoxyz/taiko-api-client";
 import { type Network } from "@taikoxyz/taiko-api-client";
 import { readConfig, getActiveNetwork } from "../lib/config.js";
 import { output, ok, err, type OutputMode } from "../lib/output.js";
@@ -25,9 +25,9 @@ export function bridgeCommand(program: Command): void {
 
       try {
         const relayer = new RelayerClient();
-        const event = await relayer.getEventByMsgHash(txHash, net as Network);
+        const details = await relayer.getMessageStatusDetails(txHash, net as Network);
 
-        if (!event) {
+        if (!details) {
           output(
             ok("bridge status", net, {
               hash: txHash,
@@ -39,13 +39,13 @@ export function bridgeCommand(program: Command): void {
           return;
         }
 
-        const statusLabels = ["NEW", "RETRIABLE", "DONE", "FAILED", "RECALLED"] as const;
-        const statusLabel = statusLabels[event.status] ?? "UNKNOWN";
+        const { status, statusCode, event } = details;
 
         output(
           ok("bridge status", net, {
             hash: txHash,
-            status: statusLabel,
+            status,
+            status_code: statusCode,
             event_type: event.eventType,
             src_chain: event.chainID,
             dest_chain: event.destChainID,
@@ -54,11 +54,11 @@ export function bridgeCommand(program: Command): void {
             created_at: event.createdAt,
             updated_at: event.updatedAt,
             note:
-              statusLabel === "NEW" || statusLabel === "RETRIABLE"
+              status === "NEW" || status === "RETRIABLE"
                 ? "Message pending relay. The relayer will process it automatically."
-                : statusLabel === "DONE"
+                : status === "DONE"
                   ? "Message successfully relayed and claimed."
-                  : statusLabel === "FAILED"
+                  : status === "FAILED"
                     ? "Message failed. Use the taiko-bridge MCP retry_message tool, or manually call IBridge.retryMessage on-chain."
                     : undefined,
           }),
@@ -74,8 +74,8 @@ export function bridgeCommand(program: Command): void {
   bridge
     .command("deposit <amount>")
     .description(
-      "Bridge ETH from L1 to Taiko L2 (requires TAIKO_PRIVATE_KEY). " +
-        "Use the taiko-bridge MCP for full-featured bridge operations."
+      "Placeholder command. Direct CLI deposit is not implemented yet. " +
+        "Use the taiko-bridge MCP for bridge operations."
     )
     .option("--token <address>", "ERC-20 token address (default: ETH)")
     .option("--to <address>", "Recipient address on L2 (default: your address)")
@@ -92,29 +92,14 @@ export function bridgeCommand(program: Command): void {
       }
       const net = (rawNet as "mainnet" | "hoodi" | undefined) ?? getActiveNetwork(config);
 
-      if (!process.env.TAIKO_PRIVATE_KEY) {
-        output(
-          err("bridge deposit", net, [
-            "TAIKO_PRIVATE_KEY environment variable is required for bridge operations.",
-            "Set it with: export TAIKO_PRIVATE_KEY=0x<your-private-key>",
-          ]),
-          mode
-        );
-        process.exit(1);
-      }
-
       output(
-        ok("bridge deposit", net, {
-          amount,
-          direction: "L1_TO_L2",
-          token: opts.token ?? "ETH",
-          to: opts.to ?? "(your address)",
-          fee: opts.fee ?? "auto",
-          note: "bridge deposit executes on-chain. Use `taiko-bridge` MCP for AI-assisted bridge operations with simulation and safety checks.",
-          status: "not_implemented",
-        }),
+        err("bridge deposit", net, [
+          "This command is not implemented yet.",
+          "Use the taiko-bridge MCP server (`bridge_eth` / `bridge_erc20`) for production bridge transactions.",
+        ]),
         mode
       );
+      process.exit(1);
     });
 
   // ─── bridge history ────────────────────────────────────────────────────────
@@ -140,6 +125,7 @@ export function bridgeCommand(program: Command): void {
       try {
         const relayer = new RelayerClient();
         const events = await relayer.getEvents(address, net as Network, page, size);
+        const pageInfo = normalizeRelayerPageInfo(events);
 
         output(
           ok("bridge history", net, {
@@ -147,10 +133,13 @@ export function bridgeCommand(program: Command): void {
             page,
             size,
             total: events.total,
-            end: events.end,
+            first: pageInfo.first,
+            last: pageInfo.last,
+            total_pages: pageInfo.totalPages,
+            visible: pageInfo.visible,
             items: events.items.map((e) => ({
               id: e.id,
-              status: ["NEW", "RETRIABLE", "DONE", "FAILED", "RECALLED"][e.status] ?? "UNKNOWN",
+              status: statusToString(e.status),
               src_chain: e.chainID,
               dest_chain: e.destChainID,
               amount: e.amount,

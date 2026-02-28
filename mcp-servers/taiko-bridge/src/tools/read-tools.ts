@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { NETWORKS, RelayerClient } from "@taikoxyz/taiko-api-client";
-import { IBridgeABI, statusToLabel } from "../lib/abis.js";
+import { BlockscoutClient, NETWORKS, RelayerClient, normalizeRelayerPageInfo, statusToString } from "@taikoxyz/taiko-api-client";
+import { IBridgeABI } from "../lib/abis.js";
 import { BRIDGE_CONTRACTS, type TaikoNetwork } from "../networks.js";
 import { makePublicClient, resolveBridgeAddress } from "../lib/clients.js";
 
@@ -48,15 +48,16 @@ export function registerReadTools(server: McpServer): void {
 
       // 1. Try relayer API
       try {
-        const event = await relayer.getEventByMsgHash(msgHash, net);
-        if (event) {
+        const details = await relayer.getMessageStatusDetails(msgHash, net);
+        if (details) {
           return {
             content: [
               {
                 type: "text" as const,
                 text: JSON.stringify({
                   msgHash,
-                  status: event.status,
+                  status: details.status,
+                  statusCode: details.statusCode,
                   source: "relayer",
                 }),
               },
@@ -86,7 +87,7 @@ export function registerReadTools(server: McpServer): void {
             type: "text" as const,
             text: JSON.stringify({
               msgHash,
-              status: statusToLabel(Number(statusCode)),
+              status: statusToString(Number(statusCode)),
               statusCode: Number(statusCode),
               source: "on-chain",
             }),
@@ -110,11 +111,19 @@ export function registerReadTools(server: McpServer): void {
       const net = network as TaikoNetwork;
       const relayer = new RelayerClient();
       const events = await relayer.getEvents(address, net, page, Math.min(size, 100));
+      const pageInfo = normalizeRelayerPageInfo(events);
       return {
         content: [
           {
             type: "text" as const,
-            text: JSON.stringify(events),
+            text: JSON.stringify({
+              ...events,
+              first: pageInfo.first,
+              last: pageInfo.last,
+              total_pages: pageInfo.totalPages,
+              visible: pageInfo.visible,
+              end: undefined,
+            }),
           },
         ],
       };
@@ -188,59 +197,91 @@ export function registerReadTools(server: McpServer): void {
   server.tool(
     "list_supported_tokens",
     "List well-known tokens that can be bridged between L1 and Taiko L2. " +
-      "Returns canonical token addresses on both L1 and L2.",
+      "Returns known token mappings with concrete addresses; unknown L1 mappings are returned as null.",
     {
       network: networkParam,
     },
     async ({ network }) => {
-      const tokens =
+      const blockscout = new BlockscoutClient();
+
+      const l1BySymbol: Record<string, string | null> =
         network === "mainnet"
-          ? [
-              {
-                symbol: "ETH",
-                name: "Ether",
-                type: "native",
-                l1Address: "native",
-                l2Address: "native",
-              },
-              {
-                symbol: "TAIKO",
-                name: "Taiko Token",
-                type: "ERC20",
-                l1Address: "0x10dea67478c5F8C5E2D90e5E9B26dBe60c54d800",
-                l2Address: "0xa9d23408b9bA935c230493c40C73824Df71A0975",
-              },
-              {
-                symbol: "USDC",
-                name: "USD Coin",
-                type: "ERC20",
-                l1Address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                l2Address: "bridged — look up at taikoscan.io/tokens or bridge.taiko.xyz",
-              },
-              {
-                symbol: "WETH",
-                name: "Wrapped Ether",
-                type: "ERC20",
-                l1Address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                l2Address: "bridged — look up at taikoscan.io/tokens or bridge.taiko.xyz",
-              },
-            ]
-          : [
-              {
-                symbol: "ETH",
-                name: "Ether",
-                type: "native",
-                l1Address: "native",
-                l2Address: "native",
-              },
-              {
-                symbol: "TAIKO",
-                name: "Taiko Token (Hoodi)",
-                type: "ERC20",
-                l1Address: "testnet — look up at hoodi.taikoscan.io/tokens",
-                l2Address: "testnet — look up at hoodi.taikoscan.io/tokens",
-              },
-            ];
+          ? {
+              TAIKO: "0x10dea67478c5F8C5E2D90e5E9B26dBe60c54d800",
+              USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+              WETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            }
+          : {
+              // Hoodi token contracts vary by deployment. Unknown L1 addresses are returned as null.
+              TAIKO: null,
+              USDC: null,
+              WETH: null,
+            };
+
+      const defaultL2BySymbol: Record<string, string | null> =
+        network === "mainnet"
+          ? {
+              TAIKO: "0xA9d23408b9bA935c230493c40C73824Df71A0975",
+              USDC: "0x07d83526730c7438048D55A4fc0b850e2aaB6f0b",
+              WETH: "0xA51894664A773981C6C112C43ce576f315d5b1B6",
+            }
+          : {
+              TAIKO: null,
+              USDC: "0xf501925c8FE6c5B2FC8faD86b8C9acb2596f3295",
+              WETH: "0x3B39685B5495359c892DDD1057B5712F49976835",
+            };
+
+      const tokenBySymbol = new Map<
+        string,
+        {
+          symbol: string;
+          name: string;
+          type: "native" | "ERC20";
+          l1Address: string | null;
+          l2Address: string;
+        }
+      >();
+
+      tokenBySymbol.set("ETH", {
+        symbol: "ETH",
+        name: "Ether",
+        type: "native",
+        l1Address: "native",
+        l2Address: "native",
+      });
+
+      for (const symbol of ["TAIKO", "USDC", "WETH"] as const) {
+        const l2Address = defaultL2BySymbol[symbol];
+        if (!l2Address) continue;
+        tokenBySymbol.set(symbol, {
+          symbol,
+          name: symbol,
+          type: "ERC20",
+          l1Address: l1BySymbol[symbol] ?? null,
+          l2Address,
+        });
+      }
+
+      try {
+        const candidates = await blockscout.getTokens(network as TaikoNetwork, { type: "ERC-20" });
+        for (const item of candidates.items) {
+          if (!item.symbol || !item.address) continue;
+          const symbol = item.symbol.toUpperCase();
+          if (symbol !== "TAIKO" && symbol !== "USDC" && symbol !== "WETH") continue;
+
+          tokenBySymbol.set(symbol, {
+            symbol,
+            name: item.name ?? symbol,
+            type: "ERC20",
+            l1Address: l1BySymbol[symbol] ?? null,
+            l2Address: item.address,
+          });
+        }
+      } catch {
+        // Fall back to curated defaults if Blockscout is unavailable.
+      }
+
+      const tokens = Array.from(tokenBySymbol.values());
 
       return {
         content: [
@@ -249,7 +290,9 @@ export function registerReadTools(server: McpServer): void {
             text: JSON.stringify({
               network,
               tokens,
-              note: "For the full canonical token list with verified addresses, check https://bridge.taiko.xyz or query the Taikoscan token API.",
+              note:
+                "Token mappings are best-effort from Blockscout token index plus known L1 canonical addresses. " +
+                "If l1Address is null, resolve canonical mapping from bridge.taiko.xyz before bridging.",
             }),
           },
         ],

@@ -21,19 +21,20 @@ function checkLargeAmount(amountWei: bigint, network: TaikoNetwork): string | nu
 
 /** Fetch recommended ETH processing fee from the relayer. */
 async function getRecommendedEthFee(network: TaikoNetwork): Promise<bigint> {
-  try {
-    const relayerBase = NETWORKS[network].relayer;
-    const resp = await fetch(`${relayerBase}/recommendedProcessingFees`);
-    if (!resp.ok) return 0n;
-    const data = (await resp.json()) as {
-      fees: Array<{ type: string; amount: string }>;
-    };
-    const ethFee = data.fees.find((f) => f.type === "eth");
-    return ethFee ? BigInt(ethFee.amount) : 0n;
-  } catch {
-    console.warn(`[taiko-bridge] Failed to fetch recommended ETH fee from relayer for ${network}, defaulting to 0`);
-    return 0n;
+  const relayerBase = NETWORKS[network].relayer;
+  const resp = await fetch(`${relayerBase}/recommendedProcessingFees`);
+  if (!resp.ok) {
+    throw new Error(`Relayer fee API returned ${resp.status} for ${network}. Pass an explicit fee override.`);
   }
+  const data = (await resp.json()) as {
+    fees: Array<{ type: string; amount: string }>;
+  };
+  const ethFee = data.fees.find((f) => f.type === "eth");
+  if (!ethFee) {
+    throw new Error(`Relayer fee API did not return an ETH fee for ${network}. Pass an explicit fee override.`);
+  }
+
+  return BigInt(ethFee.amount);
 }
 
 /** Fetch the full message object for a given msgHash from the relayer. */
@@ -95,6 +96,9 @@ export function registerWriteTools(server: McpServer): void {
 
       const recipientAddress = (to as `0x${string}` | undefined) ?? account.address;
       const relayerFee = fee ? BigInt(fee) : await getRecommendedEthFee(net);
+      if (relayerFee < 0n) {
+        throw new Error("Relayer fee cannot be negative");
+      }
 
       if (relayerFee > 2n ** 64n - 1n) {
         throw new Error("Relayer fee exceeds uint64 maximum");
@@ -192,6 +196,12 @@ export function registerWriteTools(server: McpServer): void {
       const publicClient = makePublicClient(chain);
       const recipientAddress = (to as `0x${string}` | undefined) ?? account.address;
       const relayerFee = fee ? BigInt(fee) : await getRecommendedEthFee(net);
+      if (relayerFee < 0n) {
+        throw new Error("Relayer fee cannot be negative");
+      }
+      if (relayerFee > 2n ** 64n - 1n) {
+        throw new Error("Relayer fee exceeds uint64 maximum");
+      }
       const destChainId = contracts.destChainIds[dir];
 
       const op = {

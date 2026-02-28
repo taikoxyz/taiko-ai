@@ -52,6 +52,13 @@ export interface RelayerEventsResponse {
   visible?: number;
 }
 
+export interface RelayerPageInfo {
+  first: boolean;
+  last: boolean;
+  totalPages: number | null;
+  visible: number | null;
+}
+
 export interface RelayerBlockInfoEntry {
   chainID: number;
   latestProcessedBlock: number;
@@ -62,11 +69,27 @@ export interface RelayerBlockInfo {
   data: RelayerBlockInfoEntry[];
 }
 
+export interface RelayerMessageStatusDetails {
+  status: MessageStatusName;
+  statusCode: number;
+  event: RelayerEvent;
+}
+
 export const MESSAGE_STATUS = ["NEW", "RETRIABLE", "DONE", "FAILED", "RECALLED"] as const;
 export type MessageStatus = (typeof MESSAGE_STATUS)[number];
+export type MessageStatusName = MessageStatus | "UNKNOWN";
 
-export function statusToString(status: number): MessageStatus {
+export function statusToString(status: number): MessageStatusName {
   return MESSAGE_STATUS[status] ?? "UNKNOWN";
+}
+
+export function normalizeRelayerPageInfo(response: RelayerEventsResponse): RelayerPageInfo {
+  return {
+    first: response.first ?? response.page <= 1,
+    last: response.last ?? response.end ?? false,
+    totalPages: response.total_pages ?? response.max_page ?? null,
+    visible: response.visible ?? null,
+  };
 }
 
 export class RelayerClient {
@@ -121,9 +144,22 @@ export class RelayerClient {
     return this.getEvents(address, network);
   }
 
-  async getMessageStatus(msgHash: string, network: Network = "mainnet"): Promise<MessageStatus | null> {
+  async getMessageStatus(msgHash: string, network: Network = "mainnet"): Promise<MessageStatusName | null> {
     const event = await this.getEventByMsgHash(msgHash, network);
     if (!event) return null;
     return statusToString(event.status);
+  }
+
+  async getMessageStatusDetails(
+    msgHash: string,
+    network: Network = "mainnet"
+  ): Promise<RelayerMessageStatusDetails | null> {
+    const event = await this.getEventByMsgHash(msgHash, network);
+    if (!event) return null;
+    return {
+      status: statusToString(event.status),
+      statusCode: event.status,
+      event,
+    };
   }
 }

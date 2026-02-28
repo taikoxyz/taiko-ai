@@ -2,7 +2,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { NETWORKS } from "@taikoxyz/taiko-api-client";
 import { type Network } from "@taikoxyz/taiko-api-client";
-import { scanBlockedOpcodes, BLOCKED_OPCODES } from "../lib/opcodes.js";
+import { getBlockedOpcodes, getConfiguredEvmVersion, scanBlockedOpcodes } from "../lib/opcodes.js";
 
 const networkParam = z
   .enum(["mainnet", "hoodi"])
@@ -38,12 +38,15 @@ export function registerCompatTools(server: McpServer): void {
       "Taiko runs Shanghai (not Cancun/Prague) until the Gwyneth upgrade. " +
       "Blocked opcodes: TLOAD (0x5C), TSTORE (0x5D), MCOPY (0x5E), BLOBHASH (0x49), BLOBBASEFEE (0x4A). " +
       "Note: PUSH0 (0x5F) IS available — Shanghai added it. " +
+      "Set TAIKO_EVM_VERSION=cancun|pectra to evaluate against newer fork rules. " +
       "This is the only tool of its kind for any L2 blockchain.",
     {
       address: z.string().describe("Contract address to check (0x-prefixed)"),
       network: networkParam,
     },
     async ({ address, network }) => {
+      const evmVersion = getConfiguredEvmVersion();
+      const blockedOpcodes = getBlockedOpcodes(evmVersion);
       const bytecode = await getDeployedCode(address, network as Network);
 
       if (!bytecode || bytecode === "0x") {
@@ -62,7 +65,7 @@ export function registerCompatTools(server: McpServer): void {
         };
       }
 
-      const issues = scanBlockedOpcodes(bytecode);
+      const issues = scanBlockedOpcodes(bytecode, blockedOpcodes);
 
       return {
         content: [
@@ -74,7 +77,8 @@ export function registerCompatTools(server: McpServer): void {
               compatible: issues.length === 0,
               issues,
               bytecodeLength: (bytecode.length - 2) / 2, // bytes
-              blockedOpcodes: Object.entries(BLOCKED_OPCODES).map(([hex, name]) => ({
+              evmVersion,
+              blockedOpcodes: Object.entries(blockedOpcodes).map(([hex, name]) => ({
                 hex: `0x${Number(hex).toString(16).padStart(2, "0")}`,
                 name,
               })),
@@ -100,11 +104,13 @@ export function registerCompatTools(server: McpServer): void {
       bytecode: z.string().describe("Compiled contract bytecode as hex string (with or without 0x prefix)"),
     },
     async ({ bytecode }) => {
+      const evmVersion = getConfiguredEvmVersion();
+      const blockedOpcodes = getBlockedOpcodes(evmVersion);
       if (!bytecode || bytecode.replace(/^0x/i, "").length === 0) {
         throw new Error("bytecode must be a non-empty hex string");
       }
 
-      const issues = scanBlockedOpcodes(bytecode);
+      const issues = scanBlockedOpcodes(bytecode, blockedOpcodes);
       const hexLen = bytecode.replace(/^0x/i, "").length;
 
       return {
@@ -114,6 +120,7 @@ export function registerCompatTools(server: McpServer): void {
             text: JSON.stringify({
               compatible: issues.length === 0,
               issues,
+              evmVersion,
               bytecodeLength: hexLen / 2,
               note:
                 issues.length > 0

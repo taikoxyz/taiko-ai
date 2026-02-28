@@ -187,7 +187,10 @@ taiko node logs --follow                          # Follow live output
 taiko node logs --service l2_execution_engine      # Only taiko-geth
 taiko node logs --service taiko_client_driver      # Only taiko-client
 taiko node logs --tail 200                        # Last 200 lines
+taiko node logs --json                            # JSON output (non-follow mode)
 ```
+
+`--follow` and `--json` cannot be used together.
 
 #### `taiko node upgrade`
 
@@ -225,15 +228,13 @@ taiko bridge history 0xYourAddress --json
 
 #### `taiko bridge deposit <amount>`
 
-Bridge ETH from L1 to Taiko L2. Requires `TAIKO_PRIVATE_KEY`.
+This command is currently a placeholder and exits with an error.
 
 ```bash
-export TAIKO_PRIVATE_KEY=0x...
 taiko bridge deposit 0.1
-taiko bridge deposit 1.5 --to 0xRecipient --network hoodi
 ```
 
-> **Note**: For full-featured bridge operations (ERC-20, fee estimation, simulation), use the `taiko-bridge` MCP server instead.
+> **Note**: Use the `taiko-bridge` MCP server (`bridge_eth`, `bridge_erc20`, `retry_message`, `recall_message`) for actual bridge transactions.
 
 ---
 
@@ -326,7 +327,7 @@ taiko node upgrade                        Pull latest images and restart
 
 taiko bridge status <hash>              Check bridge message relay status
 taiko bridge history <address>          View bridge history for an address
-taiko bridge deposit <amount>           Bridge ETH L1 -> L2
+taiko bridge deposit <amount>           Placeholder (not implemented)
 
 taiko contract verify <addr> <id>       Verify contract on Taikoscan
 ```

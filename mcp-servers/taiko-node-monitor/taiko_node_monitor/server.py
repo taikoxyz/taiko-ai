@@ -53,11 +53,24 @@ async def get_sync_progress() -> dict:
 async def get_peer_count() -> dict:
     """
     Get the number of P2P peers connected to the Taiko node.
-    Returns count and a 'healthy' flag (true if >= 6 peers for mainnet).
+    Returns count, network, min_recommended_peers, and a health flag.
     """
+    chain_id_hex = await rpc_call(TAIKO_RPC_URL, "eth_chainId")
+    chain_id = int(chain_id_hex, 16)
+    network = "mainnet" if chain_id == 167000 else ("hoodi" if chain_id == 167013 else "unknown")
+
+    env_key = "TAIKO_MIN_PEERS_MAINNET" if chain_id == 167000 else "TAIKO_MIN_PEERS_TESTNET"
+    default_threshold = "6" if chain_id == 167000 else "3"
+    min_recommended_peers = int(os.getenv(env_key, default_threshold))
+
     peer_count_hex = await rpc_call(TAIKO_RPC_URL, "net_peerCount")
     count = int(peer_count_hex, 16)
-    return {"count": count, "healthy": count >= 6}
+    return {
+        "count": count,
+        "network": network,
+        "min_recommended_peers": min_recommended_peers,
+        "healthy": count >= min_recommended_peers,
+    }
 
 
 @mcp.tool()

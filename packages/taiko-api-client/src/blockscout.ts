@@ -31,6 +31,19 @@ export interface BlockscoutSmartContract {
   abi: unknown[] | null;
 }
 
+export interface BlockscoutToken {
+  address: string;
+  name: string;
+  symbol: string;
+  type: string;
+  decimals: string;
+  holders: string;
+}
+
+export interface BlockscoutTokensResponse {
+  items: BlockscoutToken[];
+}
+
 export class BlockscoutClient {
   private async fetch<T>(network: Network, path: string, params?: Record<string, string>): Promise<T> {
     const base = NETWORKS[network].blockscout;
@@ -71,5 +84,16 @@ export class BlockscoutClient {
     return this.fetch<unknown>(network, `/addresses/${address}/transactions`, {
       filter: "to | from",
     });
+  }
+
+  async getTokens(
+    network: Network = "mainnet",
+    opts: {
+      type?: "ERC-20" | "ERC-721" | "ERC-1155";
+    } = {}
+  ): Promise<BlockscoutTokensResponse> {
+    const params: Record<string, string> = {};
+    if (opts.type) params.type = opts.type;
+    return this.fetch<BlockscoutTokensResponse>(network, "/tokens", params);
   }
 }

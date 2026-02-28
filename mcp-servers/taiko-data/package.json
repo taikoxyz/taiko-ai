@@ -11,6 +11,7 @@
     ".": "./dist/index.js"
   },
   "scripts": {
+    "prebuild": "npm run build --workspace @taikoxyz/taiko-api-client",
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
