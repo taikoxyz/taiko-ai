@@ -9,6 +9,8 @@ Shadow is a privacy-preserving ETH claim system on Taiko L2. An agent deposits E
 
 > **Network Selection:** If the user has not specified "hoodi" or "mainnet", always ask which network to use before proceeding.
 
+> **No pool required.** Unlike mixers, Shadow uses ZK proofs per deposit — a single user can privately transfer ETH without waiting for others to participate.
+
 ## Lifecycle
 
 ```
