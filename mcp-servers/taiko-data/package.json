@@ -1,7 +1,7 @@
 {
   "name": "@taikoxyz/mcp-data",
   "version": "0.1.0",
-  "description": "MCP server for Taiko on-chain data queries via Taikoscan and Blockscout APIs",
+  "description": "MCP server for Taiko on-chain data queries via Taikoscan and RPC",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {

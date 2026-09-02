@@ -76,8 +76,8 @@ export L1_BEACON_URL=http://<L1_NODE>:5052
 ```bash
 ./bin/taiko-client driver \
   --l1.ws ${L1_WS} --l2.ws ws://localhost:28546 --l1.beacon ${L1_BEACON_URL} --l2.auth http://localhost:28551 \
-  --taikoInbox 0xf6eA848c7d7aC83de84db45Ae28EAbf377fe0eF9 --taikoAnchor 0x1670130000000000000000000000000000010001 \
-  --preconfirmation.whitelist 0x83AE31678B9f255346Af4636B4726A84c3bD2886 --preconfirmation.serverPort 9871 \
+  --taikoInbox 0xeF4bB7A442Bd68150A3aa61A6a097B86b91700BF --taikoAnchor 0x1670130000000000000000000000000000010001 \
+  --preconfirmation.whitelist 0x8B969Fcf37122bC5eCB4E0e5Ad65CEEC3f1393ba --preconfirmation.serverPort 9871 \
   --jwtSecret ./jwt.txt --p2p.sync --p2p.checkPointSyncUrl https://rpc.hoodi.taiko.xyz \
   --p2p.bootnodes enode://ea5b8a797985f500afa37ba03ce47b0039792a942f0ac9bee9fa19a7a5410273fe43b4e8a9a28fa42cdec1b6435deb809fcb79479c55cc2ddbaf02de7a83f456@35.239.142.239:4001?discport=30304,enode://404e9493066107431bdf3f47bbb360a353244a6069903c76928fca3067575f2adf62ef396b0a8a74696669ef53cab8373e38ddd9b3d3d2d76f356d2cd2708951@34.63.118.244:4001?discport=30304,enode://b2d094ade1ce68990878b197bf818bd41d5b32e4019d42dc63d91d7020f531532f063833e44e84f78792969f69fd5553370216703c40fcc0cb835f17177fbe07@34.63.52.157:4001?discport=30304 \
   --p2p.listen.ip 0.0.0.0 --p2p.useragent taiko --p2p.listen.tcp 4001 --p2p.advertise.tcp 4001 \

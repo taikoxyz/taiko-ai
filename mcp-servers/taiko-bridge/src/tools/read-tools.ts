@@ -1,12 +1,6 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {
-  BlockscoutClient,
-  NETWORKS,
-  RelayerClient,
-  normalizeRelayerPageInfo,
-  statusToString,
-} from "@taikoxyz/taiko-api-client";
+import { NETWORKS, RelayerClient, normalizeRelayerPageInfo, statusToString } from "@taikoxyz/taiko-api-client";
 import { IBridgeABI } from "../lib/abis.js";
 import { BRIDGE_CONTRACTS, type TaikoNetwork } from "../networks.js";
 import { makePublicClient, resolveBridgeAddress } from "../lib/clients.js";
@@ -229,8 +223,6 @@ export function registerReadTools(server: McpServer): void {
       network: networkParam,
     },
     async ({ network }) => {
-      const blockscout = new BlockscoutClient();
-
       const l1BySymbol: Record<string, string | null> =
         network === "mainnet"
           ? {
@@ -289,25 +281,6 @@ export function registerReadTools(server: McpServer): void {
         });
       }
 
-      try {
-        const candidates = await blockscout.getTokens(network as TaikoNetwork, { type: "ERC-20" });
-        for (const item of candidates.items) {
-          if (!item.symbol || !item.address) continue;
-          const symbol = item.symbol.toUpperCase();
-          if (symbol !== "TAIKO" && symbol !== "USDC" && symbol !== "WETH") continue;
-
-          tokenBySymbol.set(symbol, {
-            symbol,
-            name: item.name ?? symbol,
-            type: "ERC20",
-            l1Address: l1BySymbol[symbol] ?? null,
-            l2Address: item.address,
-          });
-        }
-      } catch {
-        // Fall back to curated defaults if Blockscout is unavailable.
-      }
-
       const tokens = Array.from(tokenBySymbol.values());
 
       return {
@@ -318,8 +291,8 @@ export function registerReadTools(server: McpServer): void {
               network,
               tokens,
               note:
-                "Token mappings are best-effort from Blockscout token index plus known L1 canonical addresses. " +
-                "If l1Address is null, resolve canonical mapping from bridge.taiko.xyz before bridging.",
+                "Token mappings are a curated list of well-known tokens, not an exhaustive index. " +
+                "If l1Address is null, resolve the canonical mapping from bridge.taiko.xyz before bridging.",
             }),
           },
         ],

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ethers } from "ethers";
 import { z } from "zod";
-import { TaikoscanClient, BlockscoutClient, RelayerClient, statusToString } from "@taikoxyz/taiko-api-client";
+import { TaikoscanClient, RelayerClient, statusToString } from "@taikoxyz/taiko-api-client";
 import { getProvider, getHeadL1Origin } from "../lib/rpc.js";
 import { NETWORKS, type Network } from "../networks.js";
 
@@ -13,12 +13,7 @@ const networkParam = z
 // Minimal ABI for TaikoAnchor getCheckpoint function
 const ANCHOR_ABI = ["function getCheckpoint(uint256 blockId) view returns (bytes32 stateRoot, bytes32 signalRoot)"];
 
-export function registerTaikoTools(
-  server: McpServer,
-  taikoscan: TaikoscanClient,
-  blockscout: BlockscoutClient,
-  relayer: RelayerClient
-): void {
+export function registerTaikoTools(server: McpServer, taikoscan: TaikoscanClient, relayer: RelayerClient): void {
   // get_anchor_block_state
   server.tool(
     "get_anchor_block_state",
@@ -30,7 +25,7 @@ export function registerTaikoTools(
       const [l1Origin, provider] = await Promise.all([getHeadL1Origin(network), getProvider(network)]);
       const l2BlockNumber = await provider.getBlockNumber();
       const l1BlockHeight = parseInt(l1Origin.l1BlockHeight, 16);
-      const l2BlockId = parseInt(l1Origin.blockID, 16);
+      const l2BlockId = parseInt(l1Origin.blockId, 16);
 
       // Get current Ethereum L1 block number for lag calculation
       let l1CurrentBlock: number | null = null;
@@ -256,9 +251,11 @@ export function registerTaikoTools(
   // search
   server.tool(
     "search",
-    "Search Taiko by address, transaction hash, block number, or token name. Returns matching results from Blockscout.",
+    "Look up a Taiko address, transaction hash, or block number and return its on-chain state. " +
+      "Resolves directly against the node, so it needs an exact identifier — searching by token or " +
+      "contract name is not supported; use the Taikoscan URL in the response to search by name.",
     {
-      query: z.string().describe("Search query: address (0x...), tx hash (0x...), block number, or token name"),
+      query: z.string().describe("Address (0x + 40 hex), tx hash (0x + 64 hex), or block number"),
       network: networkParam,
     },
     async ({ query, network }) => {
@@ -333,8 +330,9 @@ export function registerTaikoTools(
         }
       }
 
-      // Token/name search via Blockscout
-      const results = await blockscout.search(query, network);
+      // Anything that is not an exact identifier cannot be resolved from the node alone.
+      // Taikoscan has no public search endpoint, so hand back its UI search URL instead of
+      // guessing at a match.
       return {
         content: [
           {
@@ -342,16 +340,11 @@ export function registerTaikoTools(
             text: JSON.stringify({
               query,
               network,
-              count: results.items.length,
-              results: results.items.slice(0, 10).map((item) => ({
-                type: item.type,
-                address: item.address,
-                name: item.name,
-                symbol: item.symbol,
-                tokenType: item.token_type,
-                isVerified: item.is_smart_contract_verified,
-                explorerUrl: item.address ? `${NETWORKS[network].taikoscanExplorer}/address/${item.address}` : null,
-              })),
+              type: "unrecognized",
+              error:
+                "Not an address, transaction hash, or block number. This tool resolves exact " +
+                "identifiers against the node and cannot search by token or contract name.",
+              searchUrl: `${NETWORKS[network].taikoscanExplorer}/search?f=0&q=${encodeURIComponent(query)}`,
             }),
           },
         ],

@@ -12,7 +12,7 @@ Covers **Taiko Mainnet** (chain `167000`) and **Hoodi testnet** (chain `167013`)
 | `mcp-servers/taiko-explorer` | 10-tool MCP — ABI/source lookup, calldata decoding, EVM compatibility checks, Slither analysis |
 | `mcp-servers/taiko-bridge` | 8-tool MCP — bridge ETH/ERC-20, message status, retry/recall, fee estimation |
 | `mcp-servers/taiko-node-monitor` | 7-tool MCP (Python) — node health, sync status, logs, preconf peers |
-| `packages/taiko-api-client` | Shared TypeScript client for Taikoscan V2, Blockscout V2, and Relayer APIs |
+| `packages/taiko-api-client` | Shared TypeScript client for Taikoscan V2 and Relayer APIs |
 | `cli/` | `taiko` CLI — network, bridge, contract verify commands |
 
 ## Installation

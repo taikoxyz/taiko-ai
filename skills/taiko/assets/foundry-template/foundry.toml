@@ -3,14 +3,17 @@ src = "src"
 out = "out"
 libs = ["lib"]
 solc_version = "0.8.30"
-evm_version = "prague"
+# Ethereum L1 is on Osaka (the execution half of Fusaka).
+evm_version = "osaka"
 optimizer = true
 optimizer_runs = 200
 via_ir = false
 
-# Use FOUNDRY_PROFILE=layer2 when compiling or deploying to Taiko L2
+# Use FOUNDRY_PROFILE=layer2 when compiling or deploying to Taiko L2.
+# Taiko L2 is on Osaka too, so this matches profile.default today. It stays pinned explicitly
+# rather than inherited so L2 can be dropped back to an older fork if the chains diverge again.
 [profile.layer2]
-evm_version = "shanghai"
+evm_version = "osaka"
 
 # Required for OpenZeppelin Upgrades plugin
 ffi = true

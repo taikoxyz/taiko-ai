@@ -1,7 +1,7 @@
 {
   "name": "@taikoxyz/mcp-explorer",
   "version": "0.1.0",
-  "description": "MCP server for Taiko smart contract analysis: ABI fetching, calldata decoding, Shanghai EVM compatibility checking, and contract metrics",
+  "description": "MCP server for Taiko smart contract analysis: ABI fetching, calldata decoding, Osaka EVM compatibility checking, and contract metrics",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {

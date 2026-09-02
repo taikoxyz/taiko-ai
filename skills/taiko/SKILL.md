@@ -19,7 +19,6 @@ See [Networks Reference](./references/networks.md) for chain IDs, RPCs, contract
 |------|------------------|
 | Deploy contract | `FOUNDRY_PROFILE=layer2 forge create ...` |
 | Verify (Taikoscan) | `forge verify-contract --verifier-url $TAIKOSCAN_API_URL ...` |
-| Verify (Blockscout) | `forge verify-contract --verifier blockscout ...` |
 | Verify (Etherscan V2) | `forge verify-contract --verifier-url "https://api.etherscan.io/v2/api?chainid=$CHAIN_ID" ...` |
 | Fork testing | `FOUNDRY_PROFILE=layer2 forge test --fork-url $TAIKO_RPC` |
 | Contract addresses | `MainnetL1Addrs.sol` / `MainnetL2Addrs.sol` / `HoodiL1Addrs.sol` / `HoodiL2Addrs.sol` in [`assets/foundry-template/src/`](./assets/foundry-template/src/) |
@@ -28,10 +27,10 @@ See [Networks Reference](./references/networks.md) for chain IDs, RPCs, contract
 
 - [Networks Reference](./references/networks.md) - Chain IDs, RPCs, contract addresses
 - [Protocol Overview](./references/protocol-overview.md) - Based rollup architecture
-- [EVM Compatibility](./references/evm-compatibility.md) - Shanghai EVM details
+- [EVM Compatibility](./references/evm-compatibility.md) - Osaka EVM details
 - [Foundry Guide](./references/foundry-guide.md) - Complete Foundry setup
 - [Security Checklist](./references/security-checklist.md) - Taiko-specific security checks
-- [Bridge Interface](./references/bridge-interface.md) - Cross-chain messaging
+- [Bridge Interface](./references/bridge-interface.md) - Cross-chain messaging, ERC20Vault, permit/Permit2 bridging
 - [Cross-Chain Patterns](./references/cross-chain-patterns.md) - L1↔L2 patterns
 - [Anchor Contract](./references/anchor-contract.md) - L1 data access from L2
 
@@ -51,11 +50,14 @@ FOUNDRY_PROFILE=layer2 forge test --fork-url $TAIKO_RPC
 ```toml
 [profile.default]
 solc_version = "0.8.30"
-evm_version = "prague"
+evm_version = "osaka"   # Ethereum L1
 
 [profile.layer2]
-evm_version = "shanghai"
+evm_version = "osaka"   # Taiko L2 — same fork today, pinned so it can diverge later
 ```
+
+Taiko and Ethereum are both on Osaka, so no opcode is available on one chain but missing on
+the other. Requires solc >= 0.8.30.
 
 See [Networks Reference](./references/networks.md#foundry-config) for RPC and Etherscan config.
 
@@ -91,20 +93,6 @@ forge verify-contract <ADDRESS> src/MyContract.sol:MyContract \
   --etherscan-api-key $TAIKOSCAN_API_KEY
 ```
 
-### Blockscout
-
-```bash
-# Mainnet
-forge verify-contract <ADDRESS> src/MyContract.sol:MyContract \
-  --chain-id 167000 --verifier blockscout \
-  --verifier-url "https://blockscoutapi.mainnet.taiko.xyz/api?"
-
-# Hoodi
-forge verify-contract <ADDRESS> src/MyContract.sol:MyContract \
-  --chain-id 167013 --verifier blockscout \
-  --verifier-url https://blockscout.hoodi.taiko.xyz/api
-```
-
 ## Cast CLI
 
 ```bash
@@ -114,6 +102,20 @@ cast block-number --rpc-url $TAIKO_RPC
 cast gas-price --rpc-url $TAIKO_RPC
 cast send <TO> "functionName(args)" --rpc-url $TAIKO_RPC --private-key $PRIVATE_KEY
 ```
+
+## Bridging ERC-20s
+
+Token transfers go through the ERC20Vault. Three entrypoints, all available on L1 and L2:
+
+| Entrypoint | Approval needed |
+|------------|-----------------|
+| `sendToken` | `token.approve(vault, amount)` first |
+| `sendTokenWithPermit` | None — EIP-2612 signature, for tokens that implement it |
+| `sendTokenWithPermit2` | One-time `token.approve(PERMIT2, ...)`, then any ERC20 |
+
+The permit variants need a vault build that includes them; fall back to `approve` + `sendToken`
+on a deployment that predates them. See
+[Bridge Interface](./references/bridge-interface.md#approval-free-bridging-permit--permit2).
 
 ## Getting ETH
 
@@ -129,7 +131,7 @@ Taiko runs live x402 facilitators for HTTP-native USDC payments on Mainnet and H
 
 | Issue | Solution |
 |-------|----------|
-| "Invalid EVM version" | Use `FOUNDRY_PROFILE=layer2` |
+| "Invalid EVM version" | Upgrade to solc >= 0.8.30 — older compilers reject `osaka` |
 | "Contract not verified" | Check API endpoint URL and key |
 | "Insufficient funds" | Bridge ETH from L1 |
 | "Transaction reverted" | Use `cast run <TX_HASH>` to debug |

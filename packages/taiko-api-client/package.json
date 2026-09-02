@@ -1,7 +1,7 @@
 {
   "name": "@taikoxyz/taiko-api-client",
   "version": "0.1.0",
-  "description": "Typed HTTP clients for Taikoscan, Blockscout v2, and Taiko Relayer APIs",
+  "description": "Typed HTTP clients for Taikoscan and Taiko Relayer APIs",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

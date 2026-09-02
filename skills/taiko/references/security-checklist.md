@@ -6,8 +6,8 @@ Taiko-specific security checks for pre-deployment review.
 
 | Check | Notes |
 |-------|-------|
-| EVM version | Shanghai (use `FOUNDRY_PROFILE=layer2`) |
-| Time logic | Use `block.timestamp`, not block numbers (2-6s blocks) |
+| EVM version | Osaka on L1 and L2 alike (build L2 with `FOUNDRY_PROFILE=layer2`) |
+| Time logic | Use `block.timestamp`, not block numbers (~1-2s blocks) |
 | Bridge validation | Verify `msg.sender == bridge` |
 | Source chain check | Validate `ctx.srcChainId` |
 | Token decimals | USDC=6, USDT=6, WBTC=8, ETH/DAI=18 |
