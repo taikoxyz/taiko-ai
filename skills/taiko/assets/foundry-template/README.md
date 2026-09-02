@@ -27,7 +27,11 @@ FOUNDRY_PROFILE=layer2 forge script script/Deploy.s.sol:DeployHelloTaiko \
 
 ## Important: EVM Version
 
-Taiko uses **Shanghai EVM**. Always use `FOUNDRY_PROFILE=layer2`.
+Taiko and Ethereum are both on **Osaka EVM**, so the `default` and `layer2` profiles pin the
+same fork today. Keep using `FOUNDRY_PROFILE=layer2` for L2 builds: it is the single knob to
+turn if the two chains diverge at a future fork.
+
+Requires solc >= 0.8.30 — older compilers reject `evm_version = "osaka"`.
 
 ## Project Structure
 

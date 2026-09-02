@@ -1,5 +1,17 @@
-export type TaikoEvmVersion = "shanghai" | "cancun" | "pectra";
+/**
+ * Fork names accepted by TAIKO_EVM_VERSION. "pectra" is kept as an alias for "prague" so
+ * existing configurations keep working.
+ */
+export type TaikoEvmVersion = "shanghai" | "cancun" | "prague" | "pectra" | "osaka";
 
+/** The fork Taiko and Ethereum both run today. */
+export const DEFAULT_EVM_VERSION: TaikoEvmVersion = "osaka";
+
+/**
+ * Opcodes a chain pinned to the given fork does NOT implement, keyed by the fork the chain is
+ * on. Taiko is on Osaka, so its list is empty; the older entries remain for evaluating
+ * bytecode against a chain that has not caught up.
+ */
 const BLOCKED_OPCODES_BY_VERSION: Record<TaikoEvmVersion, Record<number, string>> = {
   shanghai: {
     0x5c: "TLOAD", // EIP-1153 transient storage load (Cancun)
@@ -7,22 +19,36 @@ const BLOCKED_OPCODES_BY_VERSION: Record<TaikoEvmVersion, Record<number, string>
     0x5e: "MCOPY", // EIP-5656 memory copy (Cancun)
     0x49: "BLOBHASH", // EIP-4844 blob hash (Cancun)
     0x4a: "BLOBBASEFEE", // EIP-7516 blob base fee (Cancun)
+    0x1e: "CLZ", // EIP-7939 count leading zeros (Osaka)
   },
-  // Cancun/Pectra enable these opcodes, so no blocked list entries by default.
-  cancun: {},
-  pectra: {},
+  cancun: {
+    0x1e: "CLZ", // EIP-7939 count leading zeros (Osaka)
+  },
+  // Prague added no new opcodes over Cancun (EIP-7702 is a transaction type, not an opcode),
+  // so its blocked list matches Cancun's.
+  prague: {
+    0x1e: "CLZ", // EIP-7939 count leading zeros (Osaka)
+  },
+  pectra: {
+    0x1e: "CLZ", // EIP-7939 count leading zeros (Osaka)
+  },
+  // Osaka is the current fork on both chains — nothing is blocked.
+  osaka: {},
 };
 
 /**
- * Legacy default blocked opcode list for Taiko's current Shanghai EVM.
- * Use getBlockedOpcodes(...) for version-aware behavior.
+ * Blocked opcode list for a chain still pinned to Shanghai.
+ * Use getBlockedOpcodes(...) for version-aware behavior; Taiko itself is on Osaka.
  */
 export const BLOCKED_OPCODES = BLOCKED_OPCODES_BY_VERSION.shanghai;
 
 export function getConfiguredEvmVersion(): TaikoEvmVersion {
-  const raw = (process.env.TAIKO_EVM_VERSION ?? "shanghai").toLowerCase();
-  if (raw === "cancun" || raw === "pectra" || raw === "shanghai") return raw;
-  return "shanghai";
+  const raw = (process.env.TAIKO_EVM_VERSION ?? DEFAULT_EVM_VERSION).toLowerCase();
+  // hasOwnProperty, not `in`: `in` would also accept inherited keys like "constructor".
+  if (Object.prototype.hasOwnProperty.call(BLOCKED_OPCODES_BY_VERSION, raw)) {
+    return raw as TaikoEvmVersion;
+  }
+  return DEFAULT_EVM_VERSION;
 }
 
 export function getBlockedOpcodes(evmVersion: TaikoEvmVersion = getConfiguredEvmVersion()): Record<number, string> {
@@ -46,7 +72,7 @@ function getImmediateBytes(opcode: number): number {
 }
 
 /**
- * Scan EVM bytecode for opcodes not supported on Taiko's Shanghai EVM.
+ * Scan EVM bytecode for opcodes the target chain's fork does not implement.
  * Correctly skips PUSH immediate data to avoid false positives.
  * @param bytecode - Hex string with or without 0x prefix
  */

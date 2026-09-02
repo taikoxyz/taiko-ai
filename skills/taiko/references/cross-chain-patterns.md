@@ -92,6 +92,30 @@ function bridgeTokens(IERC20 token, uint256 amount, address recipient, uint64 de
 // Get address: vault.canonicalToBridged(srcChainId, tokenAddress)
 ```
 
+### Bridging without a separate approval
+
+`sendTokenWithPermit` (EIP-2612) and `sendTokenWithPermit2` (Uniswap Permit2) fold the
+approval into the bridge transaction. Both work the same way on Ethereum and Taiko. See
+[Bridge Interface](./bridge-interface.md#approval-free-bridging-permit--permit2) for the
+semantics — including the deliberately best-effort permit — and for the availability caveat.
+
+Because the vault pulls from `msg.sender` and the signature must be the caller's, these are
+EOA/wallet-facing entrypoints. A contract cannot forward a user's permit signature through
+itself: `msg.sender` at the vault would be the contract, not the signer.
+
+```javascript
+// EIP-2612 — one transaction, no approve
+const { v, r, s } = splitSignature(await signer.signTypedData(...));  // token's Permit domain
+await vault.sendTokenWithPermit(op, deadline, v, r, s, { value: fee });
+
+// Permit2 — any ERC20, after a one-time token.approve(PERMIT2, max)
+await vault.sendTokenWithPermit2(op, nonce, deadline, signature, { value: fee });
+```
+
+The Permit2 signature must authorize exactly `op.amount` of `op.token` with `to` set to the
+vault. Passing the signature as raw `bytes` lets a smart-contract wallet authorize the transfer
+with EIP-1271, which a split `(v, r, s)` cannot express.
+
 ## L1 State from L2 (via Anchor)
 
 ```solidity

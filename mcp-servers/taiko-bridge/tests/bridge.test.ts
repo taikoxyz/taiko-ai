@@ -31,10 +31,50 @@ describe("ABIs and status utilities", () => {
     expect(names).toContain("recallMessage");
   });
 
-  it("IERC20VaultABI contains bridgeToken", async () => {
+  it("IERC20VaultABI exposes the three send entrypoints", async () => {
     const { IERC20VaultABI } = await import("../src/lib/abis.js");
     const names = IERC20VaultABI.map((f: { name: string }) => f.name);
-    expect(names).toContain("bridgeToken");
+    expect(names).toContain("sendToken");
+    expect(names).toContain("sendTokenWithPermit");
+    expect(names).toContain("sendTokenWithPermit2");
+    // ERC20Vault has no "bridgeToken" — that name would not encode a valid call.
+    expect(names).not.toContain("bridgeToken");
+  });
+
+  it("every vault entrypoint takes BridgeTransferOp first and returns a Message", async () => {
+    const { IERC20VaultABI } = await import("../src/lib/abis.js");
+    const opFields = ["destChainId", "destOwner", "to", "fee", "token", "gasLimit", "amount"];
+    for (const fn of IERC20VaultABI as unknown as Array<{
+      name: string;
+      inputs: Array<{ type: string; components?: Array<{ name: string }> }>;
+      outputs: Array<{ type: string; components?: Array<{ name: string }> }>;
+    }>) {
+      expect(fn.inputs[0]?.type).toBe("tuple");
+      expect(fn.inputs[0]?.components?.map((c) => c.name)).toEqual(opFields);
+      expect(fn.outputs).toHaveLength(1);
+      expect(fn.outputs[0]?.type).toBe("tuple");
+    }
+  });
+
+  it("permit entrypoints carry their signature arguments", async () => {
+    const { IERC20VaultABI } = await import("../src/lib/abis.js");
+    const byName = (n: string) =>
+      (IERC20VaultABI as unknown as Array<{ name: string; inputs: Array<{ name: string; type: string }> }>).find(
+        (f) => f.name === n
+      )!;
+
+    expect(byName("sendToken").inputs).toHaveLength(1);
+
+    const permit = byName("sendTokenWithPermit").inputs.slice(1);
+    expect(permit.map((i) => i.type)).toEqual(["uint256", "uint8", "bytes32", "bytes32"]);
+
+    const permit2 = byName("sendTokenWithPermit2").inputs.slice(1);
+    expect(permit2.map((i) => i.type)).toEqual(["uint256", "uint256", "bytes"]);
+  });
+
+  it("PERMIT2_ADDRESS is the canonical deterministic-deployer address", async () => {
+    const { PERMIT2_ADDRESS } = await import("../src/lib/abis.js");
+    expect(PERMIT2_ADDRESS).toBe("0x000000000022D473030F116dDEE9F6B43aC78BA3");
   });
 
   it("sendMessage ABI has correct Message struct components", async () => {

@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
 Compare Taiko RPC block.hash vs keccak256(RLP(header)).
-Shanghai-only header encoding.
+
+Encodes the Osaka header layout: the 16 fields through baseFeePerGas, then withdrawalsRoot
+(Shanghai), blobGasUsed / excessBlobGas / parentBeaconBlockRoot (Cancun) and requestsHash
+(Prague). Osaka itself added no header field. The post-baseFee fields were introduced one fork
+at a time and are appended only when the RPC returns them, so this also works against a chain
+still sitting on an earlier fork.
 
 Usage:
     export TAIKO_RPC=https://rpc.hoodi.taiko.xyz   # or https://rpc.mainnet.taiko.xyz
@@ -15,6 +20,7 @@ import json
 import os
 import subprocess
 from typing import Union
+import urllib.error
 import urllib.request
 
 RPC = os.environ.get("TAIKO_RPC", "https://rpc.hoodi.taiko.xyz")
@@ -92,15 +98,27 @@ def keccak256_hex(payload: bytes) -> str:
     return out if out.startswith("0x") else "0x" + out
 
 
+# Header fields added after baseFeePerGas, in RLP order, with the encoder each one needs.
+# A header carries a prefix of this list: a chain includes a field only once it has activated
+# the fork that introduced it, and every later field along with it.
+OPTIONAL_HEADER_FIELDS = [
+    ("withdrawalsRoot", hex_bytes),  # EIP-4895 (Shanghai)
+    ("blobGasUsed", qty_to_int),  # EIP-4844 (Cancun)
+    ("excessBlobGas", qty_to_int),  # EIP-4844 (Cancun)
+    ("parentBeaconBlockRoot", hex_bytes),  # EIP-4788 (Cancun)
+    ("requestsHash", hex_bytes),  # EIP-7685 (Prague)
+]
+
+
 def require_field(block: dict, key: str) -> str:
     value = block.get(key)
     if value is None:
-        raise SystemExit(f"Missing required Shanghai header field: {key}")
+        raise SystemExit(f"Missing required header field: {key}")
     return value
 
 
-def shanghai_header_fields(block: dict) -> list:
-    return [
+def header_fields(block: dict) -> list:
+    fields = [
         hex_bytes(require_field(block, "parentHash")),
         hex_bytes(require_field(block, "sha3Uncles")),
         hex_bytes(require_field(block, "miner")),
@@ -117,35 +135,76 @@ def shanghai_header_fields(block: dict) -> list:
         hex_bytes(require_field(block, "mixHash")),
         hex_bytes(require_field(block, "nonce")),
         qty_to_int(require_field(block, "baseFeePerGas")),
-        hex_bytes(require_field(block, "withdrawalsRoot")),
     ]
 
+    # Append the trailing fields the chain actually has. A header carries a prefix of
+    # OPTIONAL_HEADER_FIELDS, so a field present after an omitted one means the response
+    # matches no real fork -- bail rather than emit a hash that silently disagrees.
+    first_absent = None
+    for key, encode in OPTIONAL_HEADER_FIELDS:
+        value = block.get(key)
+        if value is None:
+            if first_absent is None:
+                first_absent = key
+            continue
+        if first_absent is not None:
+            raise SystemExit(
+                f"Malformed header: {key!r} is present but the earlier {first_absent!r} is "
+                "missing. No fork produces that combination."
+            )
+        fields.append(encode(value))
 
-def main() -> None:
+    return fields
+
+
+def rpc_call(method: str, params: list) -> dict:
     req = urllib.request.Request(
         RPC,
         data=json.dumps({
             "jsonrpc": "2.0",
-            "method": "eth_getHeaderByNumber",
-            "params": [BLOCK_HEX],
+            "method": method,
+            "params": params,
             "id": 1,
         }).encode(),
         headers={"Content-Type": "application/json"},
     )
     with urllib.request.urlopen(req, timeout=10) as resp:
-        data = json.loads(resp.read())
+        return json.loads(resp.read())
 
-    block = data.get("result")
-    if not block:
-        raise SystemExit(f"Block {BLOCK_HEX} not found")
 
-    fields = shanghai_header_fields(block)
+def fetch_header(block_hex: str) -> dict:
+    """Fetch a block header, preferring the leaner eth_getHeaderByNumber.
+
+    That method is a geth extension and is not exposed by every gateway (the public Taiko
+    RPCs do not serve it), so fall back to the universally available eth_getBlockByNumber,
+    whose result carries the same header fields.
+    """
+    for method, params in (
+        ("eth_getHeaderByNumber", [block_hex]),
+        ("eth_getBlockByNumber", [block_hex, False]),
+    ):
+        try:
+            result = rpc_call(method, params).get("result")
+        except urllib.error.URLError as exc:
+            raise SystemExit(f"RPC request to {RPC} failed: {exc}") from exc
+        if result:
+            return result
+    raise SystemExit(
+        f"Block {block_hex} not found via eth_getHeaderByNumber or eth_getBlockByNumber"
+    )
+
+
+def main() -> None:
+    block = fetch_header(BLOCK_HEX)
+
+    fields = header_fields(block)
     header_rlp = rlp(fields)
     computed = keccak256_hex(header_rlp).lower()
     rpc_hash = require_field(block, "hash").lower()
 
     print("RPC:", RPC)
     print("Block number:", int(require_field(block, "number"), 16))
+    print("Header fields:", len(fields))
     print("RPC block.hash:", rpc_hash)
     print("keccak(headerRlp):", computed)
     if rpc_hash != computed:

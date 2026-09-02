@@ -15,7 +15,7 @@ Sources: [`MainnetL1Addrs.sol`](../assets/foundry-template/src/MainnetL1Addrs.so
 | Taikoscan | https://taikoscan.io | https://hoodi.taikoscan.io |
 | Blockscout | https://blockscout.mainnet.taiko.xyz | https://blockscout.hoodi.taiko.xyz |
 | Bridge | https://bridge.taiko.xyz | https://bridge.hoodi.taiko.xyz |
-| EVM Version | Shanghai | Shanghai |
+| EVM Version | Osaka | Osaka |
 | Currency | ETH | ETH |
 
 ## API Endpoints
@@ -60,7 +60,7 @@ L2 predefined addresses follow the pattern `0x{chainId}...0001` (Bridge), `...00
 | Proof Types | TEE + TEE, TEE + ZK | TEE + TEE, TEE + ZK |
 | ZK Coverage | 100% | — |
 | Basefee Sharing | 75% | 75% |
-| Block Gas Limit | 241,000,000 | 241,000,000 |
+| Block Gas Limit | 46,000,000 | 46,000,000 |
 | Block Time | ~2–6s | ~2–6s |
 
 Mainnet L2→L1 bridging takes up to 24 hours (cooldown period).

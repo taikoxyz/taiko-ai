@@ -56,7 +56,7 @@ cast storage <CONTRACT> <SLOT> --rpc-url $TAIKO_RPC  # Read storage
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| Invalid EVM version | Prague bytecode | Use `FOUNDRY_PROFILE=layer2` |
+| Invalid EVM version | solc too old for `osaka` | Upgrade to solc >= 0.8.30 |
 | Verification fails | Wrong API/args | Check URL, use `--constructor-args $(cast abi-encode ...)` |
 | Tx reverted | Logic error | `cast run <TX_HASH>` to trace |
 | Insufficient funds | No L2 ETH | Faucet → Bridge to L2 |

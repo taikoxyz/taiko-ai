@@ -34,11 +34,11 @@ export function registerCompatTools(server: McpServer): void {
   // ─── check_taiko_compatibility ─────────────────────────────────────────────
   server.tool(
     "check_taiko_compatibility",
-    "Check if a deployed contract uses opcodes unsupported on Taiko's Shanghai EVM. " +
-      "Taiko runs Shanghai (not Cancun/Prague) until the Gwyneth upgrade. " +
-      "Blocked opcodes: TLOAD (0x5C), TSTORE (0x5D), MCOPY (0x5E), BLOBHASH (0x49), BLOBBASEFEE (0x4A). " +
-      "Note: PUSH0 (0x5F) IS available — Shanghai added it. " +
-      "Set TAIKO_EVM_VERSION=cancun|pectra to evaluate against newer fork rules. " +
+    "Check whether a deployed contract uses opcodes unsupported on Taiko's EVM. " +
+      "Taiko and Ethereum are both on Osaka, so no opcode available on L1 is missing on L2 and " +
+      "a contract that compiles for L1 deploys unchanged on L2. " +
+      "Set TAIKO_EVM_VERSION=shanghai|cancun|prague to evaluate bytecode against an older fork " +
+      "instead — useful for a chain that has not caught up. " +
       "Checks deployed bytecode against the configured EVM version's blocked opcode list.",
     {
       address: z.string().describe("Contract address to check (0x-prefixed)"),
@@ -84,10 +84,10 @@ export function registerCompatTools(server: McpServer): void {
               })),
               note:
                 issues.length > 0
-                  ? `Contract uses ${issues.length} opcode(s) not available on Taiko's Shanghai EVM. Deployment will fail on-chain.`
-                  : "Contract is compatible with Taiko's current Shanghai EVM.",
+                  ? `Contract uses ${issues.length} opcode(s) not available on the ${evmVersion} EVM. Deployment will fail on-chain.`
+                  : `Contract is compatible with the ${evmVersion} EVM.`,
               upgradeNote:
-                "Taiko will upgrade to Cancun/Pectra opcodes with the Gwyneth upgrade. After Gwyneth, these opcodes will be available.",
+                "Taiko and Ethereum are both on Osaka, so nothing is blocked by default. Set TAIKO_EVM_VERSION to an older fork to check against a chain that lags.",
             }),
           },
         ],
@@ -98,7 +98,7 @@ export function registerCompatTools(server: McpServer): void {
   // ─── check_bytecode_compatibility ──────────────────────────────────────────
   server.tool(
     "check_bytecode_compatibility",
-    "Check raw EVM bytecode (hex) for opcodes unsupported on Taiko's Shanghai EVM. " +
+    "Check raw EVM bytecode (hex) for opcodes unsupported on Taiko's EVM (Osaka by default). " +
       "Use this to check bytecode before deploying (when you have the compiled output but no on-chain address).",
     {
       bytecode: z.string().describe("Compiled contract bytecode as hex string (with or without 0x prefix)"),
@@ -124,8 +124,8 @@ export function registerCompatTools(server: McpServer): void {
               bytecodeLength: hexLen / 2,
               note:
                 issues.length > 0
-                  ? `Bytecode uses ${issues.length} opcode(s) not available on Taiko's Shanghai EVM. Deployment will fail on-chain.`
-                  : "Bytecode is compatible with Taiko's current Shanghai EVM.",
+                  ? `Bytecode uses ${issues.length} opcode(s) not available on the ${evmVersion} EVM. Deployment will fail on-chain.`
+                  : `Bytecode is compatible with the ${evmVersion} EVM.`,
             }),
           },
         ],

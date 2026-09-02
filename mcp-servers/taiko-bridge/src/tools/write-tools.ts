@@ -2,7 +2,7 @@ import { z } from "zod";
 import { parseEther, isAddress } from "viem";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { NETWORKS, RelayerClient, type RelayerEvent } from "@taikoxyz/taiko-api-client";
-import { IBridgeABI, IERC20VaultABI } from "../lib/abis.js";
+import { IBridgeABI, IERC20VaultABI, PERMIT2_ADDRESS } from "../lib/abis.js";
 import { BRIDGE_CONTRACTS, DEFAULT_GAS_LIMITS, type TaikoNetwork, type BridgeDirection } from "../networks.js";
 import { makePublicClient, makeWalletClient, resolveBridgeAddress, resolveChain } from "../lib/clients.js";
 
@@ -162,8 +162,14 @@ export function registerWriteTools(server: McpServer): void {
   server.tool(
     "bridge_erc20",
     "Bridge ERC-20 tokens between L1 and Taiko L2. " +
-      "Calls IERC20Vault.bridgeToken on the source chain. " +
-      "SECURITY: Always simulates before executing. Requires token approval first. " +
+      "Calls IERC20Vault.sendToken (or sendTokenWithPermit / sendTokenWithPermit2) on the source chain. " +
+      "SECURITY: Always simulates before executing. " +
+      "Default mode requires a prior token.approve(vault, amount). " +
+      "Pass permit={deadline,v,r,s} to authorize via an EIP-2612 signature instead, or " +
+      "permit2={nonce,deadline,signature} to pull via Uniswap Permit2 (any ERC-20, needs a " +
+      "one-time token.approve(PERMIT2, ...)). The signer must be the wallet sending this tx. " +
+      "If simulation reverts on a permit call, the vault deployment may predate permit support — " +
+      "retry with approve + the default mode. " +
       "NOTE: Currently L1→L2 ERC20 bridging requires the L1 ERC20Vault address (see Taiko docs).",
     {
       token: z.string().describe("Token contract address on the source chain"),
@@ -172,8 +178,25 @@ export function registerWriteTools(server: McpServer): void {
       network: networkParam,
       to: z.string().optional().describe("Recipient address on destination chain (default: your own address)"),
       fee: z.string().optional().describe("Relayer processing fee in wei (default: auto from relayer recommendation)"),
+      permit: z
+        .object({
+          deadline: z.string().describe("Permit expiry as a unix timestamp"),
+          v: z.number().int().describe("Signature v"),
+          r: z.string().describe("Signature r (0x-prefixed bytes32)"),
+          s: z.string().describe("Signature s (0x-prefixed bytes32)"),
+        })
+        .optional()
+        .describe("EIP-2612 permit signature; skips the approve tx. Only for tokens implementing EIP-2612."),
+      permit2: z
+        .object({
+          nonce: z.string().describe("Permit2 unordered nonce"),
+          deadline: z.string().describe("Permit2 signature expiry as a unix timestamp"),
+          signature: z.string().describe("Permit2 EIP-712 signature (0x-prefixed bytes)"),
+        })
+        .optional()
+        .describe("Permit2 SignatureTransfer authorization; works for any ERC-20."),
     },
-    async ({ token, amount, direction, network, to, fee }) => {
+    async ({ token, amount, direction, network, to, fee, permit, permit2 }) => {
       const net = network as TaikoNetwork;
       const dir = direction as BridgeDirection;
 
@@ -182,6 +205,11 @@ export function registerWriteTools(server: McpServer): void {
       }
       if (to && !isAddress(to)) {
         throw new Error(`Invalid recipient address: ${to}`);
+      }
+      if (permit && permit2) {
+        throw new Error(
+          "Pass at most one of permit (EIP-2612) or permit2 — they are alternative ways to authorize the same pull."
+        );
       }
 
       const tokenAmount = BigInt(amount);
@@ -214,11 +242,31 @@ export function registerWriteTools(server: McpServer): void {
         amount: tokenAmount,
       };
 
+      // Pick the entrypoint matching the authorization the caller supplied. All three take the
+      // same op as their first argument and differ only in how the vault pulls the tokens.
+      const call = permit
+        ? {
+            functionName: "sendTokenWithPermit" as const,
+            args: [
+              op,
+              BigInt(permit.deadline),
+              permit.v,
+              permit.r as `0x${string}`,
+              permit.s as `0x${string}`,
+            ] as const,
+          }
+        : permit2
+          ? {
+              functionName: "sendTokenWithPermit2" as const,
+              args: [op, BigInt(permit2.nonce), BigInt(permit2.deadline), permit2.signature as `0x${string}`] as const,
+            }
+          : { functionName: "sendToken" as const, args: [op] as const };
+
       const { request } = await publicClient.simulateContract({
         address: vaultAddress as `0x${string}`,
         abi: IERC20VaultABI,
-        functionName: "bridgeToken",
-        args: [op],
+        functionName: call.functionName,
+        args: call.args as never,
         value: relayerFee,
         account: account.address,
       });
@@ -238,7 +286,13 @@ export function registerWriteTools(server: McpServer): void {
               from: account.address,
               to: recipientAddress,
               relayerFee: relayerFee.toString(),
-              note: "Ensure the ERC20Vault has token approval before calling this. Use token.approve(vaultAddress, amount) first.",
+              vault: vaultAddress,
+              method: call.functionName,
+              note: permit
+                ? "Authorized with an EIP-2612 permit — no separate approval needed. Note that permit SETS the allowance, replacing any larger standing allowance for the vault."
+                : permit2
+                  ? `Authorized via Permit2 (${PERMIT2_ADDRESS}) — requires a one-time token.approve(PERMIT2, ...).`
+                  : "Ensure the ERC20Vault has token approval before calling this. Use token.approve(vaultAddress, amount) first, or pass permit/permit2 to skip it.",
             }),
           },
         ],
