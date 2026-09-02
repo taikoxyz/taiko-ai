@@ -19,7 +19,6 @@ See [Networks Reference](./references/networks.md) for chain IDs, RPCs, contract
 |------|------------------|
 | Deploy contract | `FOUNDRY_PROFILE=layer2 forge create ...` |
 | Verify (Taikoscan) | `forge verify-contract --verifier-url $TAIKOSCAN_API_URL ...` |
-| Verify (Blockscout) | `forge verify-contract --verifier blockscout ...` |
 | Verify (Etherscan V2) | `forge verify-contract --verifier-url "https://api.etherscan.io/v2/api?chainid=$CHAIN_ID" ...` |
 | Fork testing | `FOUNDRY_PROFILE=layer2 forge test --fork-url $TAIKO_RPC` |
 | Contract addresses | `MainnetL1Addrs.sol` / `MainnetL2Addrs.sol` / `HoodiL1Addrs.sol` / `HoodiL2Addrs.sol` in [`assets/foundry-template/src/`](./assets/foundry-template/src/) |
@@ -92,20 +91,6 @@ forge verify-contract <ADDRESS> src/MyContract.sol:MyContract \
 forge verify-contract <ADDRESS> src/MyContract.sol:MyContract \
   --watch --verifier-url https://api-hoodi.taikoscan.io/api \
   --etherscan-api-key $TAIKOSCAN_API_KEY
-```
-
-### Blockscout
-
-```bash
-# Mainnet
-forge verify-contract <ADDRESS> src/MyContract.sol:MyContract \
-  --chain-id 167000 --verifier blockscout \
-  --verifier-url "https://blockscoutapi.mainnet.taiko.xyz/api?"
-
-# Hoodi
-forge verify-contract <ADDRESS> src/MyContract.sol:MyContract \
-  --chain-id 167013 --verifier blockscout \
-  --verifier-url https://blockscout.hoodi.taiko.xyz/api
 ```
 
 ## Cast CLI

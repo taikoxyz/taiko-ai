@@ -86,11 +86,6 @@ forge verify-contract <ADDRESS> src/HelloTaiko.sol:HelloTaiko \
 # Taikoscan (hoodi)
 forge verify-contract <ADDRESS> src/HelloTaiko.sol:HelloTaiko \
   --verifier-url https://api-hoodi.taikoscan.io/api --etherscan-api-key $TAIKOSCAN_API_KEY
-
-# Blockscout (mainnet)
-forge verify-contract <ADDRESS> src/HelloTaiko.sol:HelloTaiko \
-  --chain-id 167000 --verifier blockscout \
-  --verifier-url "https://blockscoutapi.mainnet.taiko.xyz/api?"
 ```
 
 ## Fork Testing

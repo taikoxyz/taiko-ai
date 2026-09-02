@@ -30,8 +30,23 @@ export async function taikoRpcCall<T>(network: Network, method: string, params: 
   return json.result as T;
 }
 
+/**
+ * Raw `taiko_headL1Origin` payload. The L2 block number field was renamed between taiko-geth
+ * versions and the networks are not in sync: mainnet returns `blockId`, Hoodi still returns
+ * `blockID`. Both spellings are accepted and normalized by getHeadL1Origin.
+ */
+interface RawL1Origin {
+  blockId?: string;
+  blockID?: string;
+  l2BlockHash: string;
+  l1BlockHeight: string;
+  l1BlockHash: string;
+  isForcedInclusion?: boolean;
+}
+
 export interface L1OriginInfo {
-  blockID: string;
+  /** L2 block number as a hex quantity. Normalized from the node's blockId/blockID. */
+  blockId: string;
   l2BlockHash: string;
   l1BlockHeight: string;
   l1BlockHash: string;
@@ -40,5 +55,16 @@ export interface L1OriginInfo {
 
 /** Get the current L1 origin block info anchored in the latest L2 block */
 export async function getHeadL1Origin(network: Network): Promise<L1OriginInfo> {
-  return taikoRpcCall<L1OriginInfo>(network, "taiko_headL1Origin", []);
+  const raw = await taikoRpcCall<RawL1Origin>(network, "taiko_headL1Origin", []);
+  const blockId = raw.blockId ?? raw.blockID;
+  if (blockId === undefined) {
+    throw new Error("taiko_headL1Origin returned neither blockId nor blockID");
+  }
+  return {
+    blockId,
+    l2BlockHash: raw.l2BlockHash,
+    l1BlockHeight: raw.l1BlockHeight,
+    l1BlockHash: raw.l1BlockHash,
+    isForcedInclusion: raw.isForcedInclusion,
+  };
 }

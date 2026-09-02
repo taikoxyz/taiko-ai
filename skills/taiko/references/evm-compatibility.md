@@ -42,7 +42,7 @@ Requires solc ≥ 0.8.30 (`evm_version = "osaka"` is rejected by older compilers
 | Parameter | Taiko | Ethereum |
 |-----------|-------|----------|
 | Gas Limit | 46M | ~60M (validator-set) |
-| Block Time | 2-6s | 12s |
+| Block Time | ~1-2s | 12s |
 | Difficulty | 0 (PoS) | 0 (PoS) |
 
 Gas limit is the practical difference to design around, not the instruction set.

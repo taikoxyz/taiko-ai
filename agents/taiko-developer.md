@@ -68,7 +68,7 @@ rather than treating it as a bad signature. See
 
 - [ ] Bridge callbacks verify `msg.sender == bridge`
 - [ ] Cross-chain: validate `ctx.srcChainId` and `ctx.from`
-- [ ] Time logic uses `block.timestamp`, not block numbers (2-6s blocks)
+- [ ] Time logic uses `block.timestamp`, not block numbers (~1-2s blocks)
 
 ## Troubleshooting
 

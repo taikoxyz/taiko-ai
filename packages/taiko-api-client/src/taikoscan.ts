@@ -48,6 +48,27 @@ export interface ContractCreator {
   txHash: string;
 }
 
+/**
+ * One entry of an Etherscan-style `contract/getsourcecode` response.
+ * Unverified contracts still return a row, with ABI set to the sentinel string below.
+ */
+export interface ContractSourceInfo {
+  SourceCode: string;
+  ABI: string;
+  ContractName: string;
+  CompilerVersion: string;
+  OptimizationUsed: string;
+  Runs: string;
+  ConstructorArguments: string;
+  EVMVersion: string;
+  LicenseType: string;
+  Proxy: string;
+  Implementation: string;
+}
+
+/** Value Etherscan-style APIs return in `ABI` when a contract has no verified source. */
+export const UNVERIFIED_ABI_SENTINEL = "Contract source code not verified";
+
 export interface GasOracle {
   LastBlock: string;
   SafeGasPrice: string;
@@ -141,6 +162,20 @@ export class TaikoscanClient {
       action: "getsourcecode",
       address,
     });
+  }
+
+  /**
+   * Typed `getsourcecode` lookup returning the single result row, or null when the address
+   * has no entry at all. A row with `ABI === UNVERIFIED_ABI_SENTINEL` means the contract
+   * exists but is not source-verified.
+   */
+  async getContractSourceInfo(address: string, network: Network = "mainnet"): Promise<ContractSourceInfo | null> {
+    const result = await this.fetch<ContractSourceInfo[] | "">(network, {
+      module: "contract",
+      action: "getsourcecode",
+      address,
+    });
+    return Array.isArray(result) ? (result[0] ?? null) : null;
   }
 
   async getContractCreator(address: string, network: Network = "mainnet"): Promise<ContractCreator[]> {

@@ -65,7 +65,7 @@ app.get("/api/data", (req, res) => {
 app.listen(3000);
 ```
 
-Set `USDC_ADDRESS` to the network's USDC token contract from Taikoscan/Blockscout. Some x402 server versions do not provide a default asset for Taiko networks, so use `price` as an `{ amount, asset }` object to avoid 500 errors.
+Set `USDC_ADDRESS` to the network's USDC token contract from Taikoscan. Some x402 server versions do not provide a default asset for Taiko networks, so use `price` as an `{ amount, asset }` object to avoid 500 errors.
 
 ## Next.js (middleware.ts)
 
